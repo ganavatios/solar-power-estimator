@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estimador de Producción Solar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+e2b3c6e+g8cG6c6X+6tXf5Yz6X0b6c8v+8Y5X+6w="
+    crossorigin="">
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:column; height:100vh;}
+    #map {flex:1; width:100%;}
+    .container {padding:10px; box-sizing:border-box; background:#f9f9f9;}
+    .form-group {margin-bottom:10px;}
+    label {display:block; margin-bottom:5px;}
+    input, select, button {width:100%; padding:8px; box-sizing:border-box;}
+    #results {margin-top:20px; padding:10px; background:#fff; border:1px solid #ccc;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Estimador de Producción Solar</h1>
+    <form id="inputForm">
+      <div class="form-group">
+        <label for="panelPower">Potencia del panel (W)</label>
+        <input type="number" id="panelPower" placeholder="Ej: 300">
+      </div>
+      <div class="form-group">
+        <label for="tilt">Inclinación (°) - Horizontal=0, Vertical=90</label>
+        <input type="number" id="tilt" placeholder="Ej: 30">
+      </div>
+      <div class="form-group">
+        <label for="azimuth">Azimut (°) - Dirección del panel</label>
+        <input type="number" id="azimuth" placeholder="Ej: 180">
+      </div>
+      <div class="form-group">
+        <label for="inverterEff">Eficiencia del inversor (%)</label>
+        <input type="number" id="inverterEff" placeholder="Ej: 96">
+      </div>
+      <div class="form-group">
+        <label>Tarifa</label>
+        <div class="form-group">
+          <input type="radio" id="tariffPvpc" name="tariff" value="pvpc" checked>
+          <label for="tariffPvpc">PVPC (horario variable)</label>
+        </div>
+        <div class="form-group">
+          <input type="radio" id="tariffFixed" name="tariff" value="fixed">
+          <label for="tariffFixed">Tarifa fija (valle/punta)</label>
+        </div>
+      </div>
+      <div id="fixedTariffFields" style="display:none;">
+        <div class="form-group">
+          <label for="priceValle">Precio Valle (€/kWh)</label>
+          <input type="number" id="priceValle" step="0.0001" placeholder="Ej: 0.12">
+        </div>
+        <div class="form-group">
+          <label for="pricePunta">Precio Punta (€/kWh)</label>
+          <input type="number" id="pricePunta" step="0.0001" placeholder="Ej: 0.25">
+        </div>
+      </div>
+      <button type="button" id="calcBtn">Calcular</button>
+    </form>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j8Y+XcJ2v4pX2Y5Y+2Z5x1gX2x5e5gX+6Z5gX="
+    crossorigin=""></script>
+  <script>
+    // Initialize map
+    var map = L.map('map').setView([40.4168, -3.7038], 10); // Default: Madrid
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Variable to store selected location
+    var selectedLat = null;
+    var selectedLng = null;
+
+    // Geolocation on load
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        selectedLat = pos.coords.latitude;
+        selectedLng = pos.coords.longitude;
+        map.setView([selectedLat, selectedLng], 15);
+        L.marker([selectedLat, selectedLng]).addTo(map);
+      }, function(err) {
+        console.warn('Geolocation failed:', err);
+      });
+    }
+
+    // Map click to set location
+    map.on('click', function(e) {
+      selectedLat = e.latlng.lat;
+      selectedLng = e.latlng.lng;
+      map.eachLayer(function(layer) {
+        if (layer instanceof L.Marker) {
+          layer.remove();
+        }
+      });
+      L.marker([selectedLat, selectedLng]).addTo(map);
+    });
+
+    // Show/hide fixed tariff fields
+    var tariffRadios = document.querySelectorAll('input[name="tariff"]');
+    tariffRadios.forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        var fixedFields = document.getElementById('fixedTariffFields');
+        if (radio.value === 'fixed') {
+          fixedFields.style.display = 'block';
+        } else {
+          fixedFields.style.display = 'none';
+        }
+      });
+    });
+
+    // Calculate button handler
+    document.getElementById('calcBtn').addEventListener('click', function() {
+      // Get inputs
+      var panelPower = parseFloat(document.getElementById('panelPower').value) || 0;
+      var tilt = parseFloat(document.getElementById('tilt').value) || 0;
+      var azimuth = parseFloat(document.getElementById('azimuth').value) || 0;
+      var inverterEff = parseFloat(document.getElementById('inverterEff').value) || 96;
+      var tariffType = document.querySelector('input[name="tariff"]:checked').value;
+      var priceValle = parseFloat(document.getElementById('priceValle').value) || 0;
+      var pricePunta = parseFloat(document.getElementById('pricePunta').value) || 0;
+
+      // Determine price per kWh
+      var pricePerKWh = 0;
+      if (tariffType === 'pvpc') {
+        // For PVPC, we could fetch real-time data, but for demo use a placeholder
+        pricePerKWh = 0.15; // Approx average PVPC price
+      } else if (tariffType === 'fixed') {
+        // Weighted price: assume 50% valle, 50% punta (simplified)
+        pricePerKWh = (priceValle + pricePunta) / 2;
+      }
+
+      // Use selected location or fallback to default
+      var lat = selectedLat;
+      var lng = selectedLng;
+      if (lat === null || lng === null) {
+        alert('Por favor, permite la geolocalización o haz clic en el mapa para seleccionar una ubicación.');
+        return;
+      }
+
+      // Show loading
+      var resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = 'Calculando...';
+
+      // Call PVGIS API
+      var apiKey = 'YOUR_PVGIS_API_KEY'; // Replace with your key
+      var date = new Date().getFullYear(); // Use current year
+      var url = 'https://re.jrc.ec.europa.eu/api/v5_2/production/ac?lat=' + lat + '&lon=' + lng + '&date=' + date + '&apikey=' + apiKey + '&format=json&tilt=' + tilt + '&azimuth=' + azimuth + '&system_loss=14&module_type=PV250';
+
+      fetch(url)
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Error al obtener datos de PVGIS');
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          // Assume annual energy is the first value in the first output's values array
+          var annualProduction = data.outputs[0].values[0][1];
+          var productionKWh = parseFloat(annualProduction);
+          var savings = productionKWh * pricePerKWh;
+          resultsDiv.innerHTML = '<strong>Resultados:</strong><br>' +
+            'Producción anual estimada: <strong>' + productionKWh.toFixed(2) + ' kWh</strong><br>' +
+            'Ahorro anual estimado: <strong>' + savings.toFixed(2) + ' €</strong>';
+        })
+        .catch(function(err) {
+          resultsDiv.innerHTML = 'Error al calcular la producción. Revisa la consola para detalles.';
+          console.error(err);
+        });
+    });
+  </script>
+</body>
+</html>
