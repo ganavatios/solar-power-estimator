@@ -54,7 +54,7 @@
   "processingData": "Processing PVGIS data...",
   "calculatingSavings": "Calculating economic savings...",
   "completed": "Completed!",
-  "pvgisLink": "View in PVGIS:",
-  "viewCaseStudy": "View complete case study",
-  "pvgisLinkDesc": "Check detailed data, monthly charts and more information on PVGIS"
+  "pvgisLink": "More information:",
+  "viewCaseStudy": "Official PVGIS calculator",
+  "pvgisLinkDesc": "Access the full PVGIS tool with advanced options and detailed charts"
 }

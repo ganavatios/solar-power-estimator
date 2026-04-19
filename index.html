@@ -656,15 +656,10 @@
             progressContainer.classList.remove('active');
           }, 500);
 
-          // Build PVGIS case study URL
-          var pvgisUrl = 'https://re.jrc.ec.europa.eu/pvgis5/#PVcalc?' +
-            'lat=' + lat.toFixed(4) +
-            '&lon=' + lng.toFixed(4) +
-            '&peakpower=' + panelPower +
-            '&loss=' + systemLoss +
-            '&angle=' + tilt +
-            '&aspect=' + azimuth +
-            '&outputformat=json';
+          // PVGIS tools URL (language-specific)
+          var pvgisUrl = currentLang === 'es' 
+            ? 'https://re.jrc.ec.europa.eu/pvg_tools/es/#DR'
+            : 'https://re.jrc.ec.europa.eu/pvg_tools/en/#DR';
 
           // Display results
           resultsDiv.innerHTML = 
