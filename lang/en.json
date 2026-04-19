@@ -53,5 +53,8 @@
   "locationError": "Could not get location. Please check browser permissions.",
   "processingData": "Processing PVGIS data...",
   "calculatingSavings": "Calculating economic savings...",
-  "completed": "Completed!"
+  "completed": "Completed!",
+  "pvgisLink": "View in PVGIS:",
+  "viewCaseStudy": "View complete case study",
+  "pvgisLinkDesc": "Check detailed data, monthly charts and more information on PVGIS"
 }

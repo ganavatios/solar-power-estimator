@@ -53,5 +53,8 @@
   "locationError": "No se pudo obtener la ubicación. Por favor, verifica los permisos del navegador.",
   "processingData": "Procesando datos de PVGIS...",
   "calculatingSavings": "Calculando ahorro económico...",
-  "completed": "¡Completado!"
+  "completed": "¡Completado!",
+  "pvgisLink": "Ver en PVGIS:",
+  "viewCaseStudy": "Ver caso de estudio completo",
+  "pvgisLinkDesc": "Consulta los datos detallados, gráficos mensuales y más información en PVGIS"
 }

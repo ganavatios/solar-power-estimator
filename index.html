@@ -656,6 +656,16 @@
             progressContainer.classList.remove('active');
           }, 500);
 
+          // Build PVGIS case study URL
+          var pvgisUrl = 'https://re.jrc.ec.europa.eu/pvgis5/#PVcalc?' +
+            'lat=' + lat.toFixed(4) +
+            '&lon=' + lng.toFixed(4) +
+            '&peakpower=' + panelPower +
+            '&loss=' + systemLoss +
+            '&angle=' + tilt +
+            '&aspect=' + azimuth +
+            '&outputformat=json';
+
           // Display results
           resultsDiv.innerHTML = 
             '<h3>📊 Resultados del Análisis Solar</h3>' +
@@ -683,6 +693,13 @@
             '• Anual: <strong>' + annualSavings.toFixed(2) + ' €/año</strong><br>' +
             '• Mensual: <strong>' + monthlySavings.toFixed(2) + ' €/mes</strong><br>' +
             '<small>(Precio: ' + pricePerKWh.toFixed(3) + ' €/kWh)</small>' +
+            '</div>' +
+            '<div class="result-item" style="background:#fff9e6; border-left-color:#ffc107;">' +
+            '<strong>🔗 ' + (translations.pvgisLink || 'Ver en PVGIS:') + '</strong><br>' +
+            '<a href="' + pvgisUrl + '" target="_blank" rel="noopener noreferrer" style="color:#007bff; text-decoration:none;">' +
+            '📊 ' + (translations.viewCaseStudy || 'Ver caso de estudio completo') + ' ↗' +
+            '</a><br>' +
+            '<small style="color:#666;">' + (translations.pvgisLinkDesc || 'Consulta los datos detallados, gráficos mensuales y más información en PVGIS') + '</small>' +
             '</div>' +
             '<div class="result-item">' +
             '<small>📌 Datos proporcionados por PVGIS © European Communities, 2001-2024</small>' +
