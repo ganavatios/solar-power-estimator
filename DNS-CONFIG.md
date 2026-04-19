@@ -10,7 +10,9 @@
 
 El código ahora usa:
 - **Local**: `http://localhost:8000/api/*` (servidor Python)
-- **Producción**: `https://api.ganavatios.com/api/*` (Vercel)
+- **Producción**: `https://solar-power-estimator-8rlzj9qvb-ganavatios-projects.vercel.app/api/*` (Vercel directamente)
+
+**⚠️ TEMPORAL**: Usando URL de Vercel directa. Cuando configures `api.ganavatios.com`, se cambiará a esa URL.
 
 ## Configuración Necesaria en DNS
 
