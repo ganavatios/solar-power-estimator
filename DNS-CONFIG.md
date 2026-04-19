@@ -1,18 +1,21 @@
 # Configuración de DNS para GanaVatios
 
-## Problema Actual
+## ✅ CONFIGURACIÓN COMPLETADA
 
-- **www.ganavatios.com** → GitHub Pages (solo archivos estáticos, sin APIs)
-- **APIs de Vercel** → No accesibles desde el dominio principal
-- **Resultado**: Error 404 en `/api/pvgis` y `/api/pvpc-prices`
+- **www.ganavatios.com** → GitHub Pages (archivos estáticos HTML/CSS/JS)
+- **api.ganavatios.com** → Vercel (serverless functions)
+- **Estado**: ✅ Funcionando correctamente
 
-## Solución Implementada (Temporal)
+## Solución Implementada
 
-El código ahora usa:
+El código usa:
 - **Local**: `http://localhost:8000/api/*` (servidor Python)
-- **Producción**: `https://solar-power-estimator-8rlzj9qvb-ganavatios-projects.vercel.app/api/*` (Vercel directamente)
+- **Producción**: `https://api.ganavatios.com/api/*` (Vercel)
 
-**⚠️ TEMPORAL**: Usando URL de Vercel directa. Cuando configures `api.ganavatios.com`, se cambiará a esa URL.
+**Arquitectura:**
+- Frontend: GitHub Pages sirve archivos estáticos desde `www.ganavatios.com`
+- Backend: Vercel sirve APIs desde `api.ganavatios.com`
+- CORS: Configurado correctamente en `vercel.json`
 
 ## Configuración Necesaria en DNS
 
