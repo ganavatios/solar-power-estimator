@@ -89,7 +89,7 @@
       body {height:auto; overflow:auto;}
       .container {flex-direction:column; height:auto;}
       .content-wrapper {width:100%; display:flex; flex-direction:column;}
-      #map {width:100%; height:400px; min-height:400px; order:4;}
+      #map {width:100% !important; height:400px; min-height:400px; order:4;}
       
       /* Mostrar selector móvil y ocultar el del header */
       .lang-selector-mobile {display:flex; order:1; justify-content:center; margin-bottom:15px;}
@@ -155,13 +155,11 @@
           </svg>
         </div>
       </div>
-      <div id="map"></div>
       <button class="location-btn" id="getLocationBtn">
         <span>📍</span>
         <span id="getLocationText">Obtener mi ubicación</span>
       </button>
-    </button>
-    <p><small id="mapInstruction">👈 Haz clic en el mapa para seleccionar tu ubicación</small></p>
+      <p><small id="mapInstruction">👈 Haz clic en el mapa para seleccionar tu ubicación</small></p>
     <div id="locationInfo" style="padding:10px; background:#E1F5FE; border-radius:5px; margin-bottom:15px; display:none; border-left:3px solid #2E87AC;">
       <strong id="locationSelectedLabel">📍 Ubicación seleccionada:</strong><br>
       <span id="coordsDisplay">-</span>
@@ -251,6 +249,7 @@
         <a href="#" id="contactLink">📧 <span id="contactText">Contact us</span></a>
       </div>
     </div>
+    <div id="map"></div>
   </div>
 
   <!-- Leaflet JS -->
@@ -269,6 +268,35 @@
     setTimeout(function() {
       map.invalidateSize();
     }, 100);
+
+    // Reorganizar mapa en móvil
+    function reorganizeMapForMobile() {
+      var mapElement = document.getElementById('map');
+      var headerContainer = document.querySelector('.header-container');
+      var contentWrapper = document.querySelector('.content-wrapper');
+      
+      if (window.innerWidth <= 768) {
+        // Móvil: mover el mapa después del header dentro del content-wrapper
+        if (mapElement.parentElement.className !== 'content-wrapper') {
+          headerContainer.parentNode.insertBefore(mapElement, headerContainer.nextSibling);
+        }
+      } else {
+        // Desktop: mover el mapa fuera del content-wrapper
+        var container = document.querySelector('.container');
+        if (mapElement.parentElement.className === 'content-wrapper') {
+          container.appendChild(mapElement);
+        }
+      }
+      
+      // Redimensionar mapa
+      setTimeout(function() {
+        map.invalidateSize();
+      }, 100);
+    }
+
+    // Ejecutar al cargar y al redimensionar
+    reorganizeMapForMobile();
+    window.addEventListener('resize', reorganizeMapForMobile);
 
     // Variable to store selected location
     var selectedLat = null;
