@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>GanaVatios | Ahorro Energético Inteligente y Solar Plug & Play</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reduce tu factura de luz con GanaVatios. Soluciones de domótica y kits solares de balcón fáciles de instalar.">
+  <link rel="icon" href="logo.png" type="image/png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #43A047 0%, #2E87AC 100%);
+      color: white;
+    }
+    .loader {
+      text-align: center;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    // Auto-redirect to language-specific page
+    (function() {
+      const browserLang = navigator.language || navigator.userLanguage;
+      const lang = browserLang.startsWith('es') ? 'es' : 'en';
+      window.location.replace(`/${lang}/`);
+    })();
+  </script>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>Redirecting to your language... / Redirigiendo a tu idioma...</p>
+  </div>
+  <!-- Fallback for users with JavaScript disabled -->
+  <noscript>
+    <h2>Please enable JavaScript / Por favor activa JavaScript</h2>
+    <p>
+      <a href="/es/" style="color: white;">Español</a> | 
+      <a href="/en/" style="color: white;">English</a>
+    </p>
+  </noscript>
+</body>
+</html>
