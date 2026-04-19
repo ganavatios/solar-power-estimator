@@ -56,5 +56,21 @@
   "completed": "Completed!",
   "pvgisLink": "More information:",
   "viewCaseStudy": "Official PVGIS calculator",
-  "pvgisLinkDesc": "Access the full PVGIS tool with advanced options and detailed charts"
+  "pvgisLinkDesc": "Access the full PVGIS tool with advanced options and detailed charts",
+  "resultsTitle": "📊 Solar Analysis Results",
+  "resultLocation": "📍 Location:",
+  "resultInstalledPower": "⚡ Installed capacity:",
+  "resultSolarRadiation": "☀️ Annual solar radiation:",
+  "resultAnnualProduction": "🔋 Annual production:",
+  "resultAverageProduction": "📅 Average production:",
+  "resultDaily": "Daily:",
+  "resultMonthly": "Monthly:",
+  "resultEstimatedSavings": "💰 Estimated economic savings:",
+  "resultAnnualLabel": "Annual:",
+  "resultMonthlyLabel": "Monthly:",
+  "resultPriceLabel": "Price:",
+  "resultDataSource": "📌 Data provided by PVGIS © European Communities, 2001-2024",
+  "errorZeroProduction": "Annual production is 0. Check parameters or location",
+  "errorNoData": "No totals data found in the response",
+  "errorInvalidData": "API did not return valid data. Structure:"
 }

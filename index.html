@@ -626,7 +626,7 @@
           
           // Parse PVGIS response - verificar estructura
           if (!data.outputs) {
-            throw new Error('La API no devolvió datos válidos. Estructura: ' + JSON.stringify(Object.keys(data)));
+            throw new Error((translations.errorInvalidData || 'La API no devolvió datos válidos. Estructura:') + ' ' + JSON.stringify(Object.keys(data)));
           }
 
           // PVGIS puede devolver los datos en diferentes formatos
@@ -643,7 +643,7 @@
           
           if (!totals) {
             console.error('Estructura de outputs:', data.outputs);
-            throw new Error('No se encontraron datos de totales en la respuesta');
+            throw new Error(translations.errorNoData || 'No se encontraron datos de totales en la respuesta');
           }
 
           console.log('Totales extraídos:', totals);
@@ -655,7 +655,7 @@
           var solarIrradiance = totals.H_sun_f || totals['H(i)_y'] || totals.H_i_y || 0;
           
           if (annualProductionKWh === 0) {
-            throw new Error('La producción anual es 0. Revisa los parámetros o la ubicación');
+            throw new Error(translations.errorZeroProduction || 'La producción anual es 0. Revisa los parámetros o la ubicación');
           }
           
           var annualSavings = annualProductionKWh * pricePerKWh;
@@ -677,31 +677,31 @@
 
           // Display results
           resultsDiv.innerHTML = 
-            '<h3>📊 Resultados del Análisis Solar</h3>' +
+            '<h3>' + (translations.resultsTitle || '📊 Resultados del Análisis Solar') + '</h3>' +
             '<div class="result-item">' +
-            '<strong>📍 Ubicación:</strong> ' + lat.toFixed(4) + '°, ' + lng.toFixed(4) + '°' +
+            '<strong>' + (translations.resultLocation || '📍 Ubicación:') + '</strong> ' + lat.toFixed(4) + '°, ' + lng.toFixed(4) + '°' +
             '</div>' +
             '<div class="result-item">' +
-            '<strong>⚡ Potencia instalada:</strong> ' + panelPowerWp + ' Wp (' + panelPower.toFixed(2) + ' kWp)' +
+            '<strong>' + (translations.resultInstalledPower || '⚡ Potencia instalada:') + '</strong> ' + panelPowerWp + ' Wp (' + panelPower.toFixed(2) + ' kWp)' +
             '</div>' +
             (solarIrradiance > 0 ? 
               '<div class="result-item">' +
-              '<strong>☀️ Radiación solar anual:</strong> ' + solarIrradiance.toFixed(0) + ' kWh/m²' +
+              '<strong>' + (translations.resultSolarRadiation || '☀️ Radiación solar anual:') + '</strong> ' + solarIrradiance.toFixed(0) + ' kWh/m²' +
               '</div>' : '') +
             '<div class="result-item">' +
-            '<strong>🔋 Producción anual:</strong> ' + annualProductionKWh.toFixed(2) + ' kWh/año' +
+            '<strong>' + (translations.resultAnnualProduction || '🔋 Producción anual:') + '</strong> ' + annualProductionKWh.toFixed(2) + ' kWh/' + (translations.year || 'año') +
             '</div>' +
             (avgDailyProduction > 0 || avgMonthlyProduction > 0 ?
               '<div class="result-item">' +
-              '<strong>📅 Producción promedio:</strong><br>' +
-              (avgDailyProduction > 0 ? '• Diaria: ' + avgDailyProduction.toFixed(2) + ' kWh/día<br>' : '') +
-              (avgMonthlyProduction > 0 ? '• Mensual: ' + avgMonthlyProduction.toFixed(2) + ' kWh/mes' : '') +
+              '<strong>' + (translations.resultAverageProduction || '📅 Producción promedio:') + '</strong><br>' +
+              (avgDailyProduction > 0 ? '• ' + (translations.resultDaily || 'Diaria:') + ' ' + avgDailyProduction.toFixed(2) + ' kWh/' + (translations.day || 'día') + '<br>' : '') +
+              (avgMonthlyProduction > 0 ? '• ' + (translations.resultMonthly || 'Mensual:') + ' ' + avgMonthlyProduction.toFixed(2) + ' kWh/' + (translations.month || 'mes') : '') +
               '</div>' : '') +
             '<div class="result-item" style="background:#e6ffe6; border-left-color:#28a745;">' +
-            '<strong>💰 Ahorro económico estimado:</strong><br>' +
-            '• Anual: <strong>' + annualSavings.toFixed(2) + ' €/año</strong><br>' +
-            '• Mensual: <strong>' + monthlySavings.toFixed(2) + ' €/mes</strong><br>' +
-            '<small>(Precio: ' + pricePerKWh.toFixed(3) + ' €/kWh)</small>' +
+            '<strong>' + (translations.resultEstimatedSavings || '💰 Ahorro económico estimado:') + '</strong><br>' +
+            '• ' + (translations.resultAnnualLabel || 'Anual:') + ' <strong>' + annualSavings.toFixed(2) + ' €/' + (translations.year || 'año') + '</strong><br>' +
+            '• ' + (translations.resultMonthlyLabel || 'Mensual:') + ' <strong>' + monthlySavings.toFixed(2) + ' €/' + (translations.month || 'mes') + '</strong><br>' +
+            '<small>(' + (translations.resultPriceLabel || 'Precio:') + ' ' + pricePerKWh.toFixed(3) + ' €/kWh)</small>' +
             '</div>' +
             '<div class="result-item" style="background:#fff9e6; border-left-color:#ffc107;">' +
             '<strong>🔗 ' + (translations.pvgisLink || 'Ver en PVGIS:') + '</strong><br>' +
@@ -711,7 +711,7 @@
             '<small style="color:#666;">' + (translations.pvgisLinkDesc || 'Consulta los datos detallados, gráficos mensuales y más información en PVGIS') + '</small>' +
             '</div>' +
             '<div class="result-item">' +
-            '<small>📌 Datos proporcionados por PVGIS © European Communities, 2001-2024</small>' +
+            '<small>' + (translations.resultDataSource || '📌 Datos proporcionados por PVGIS © European Communities, 2001-2024') + '</small>' +
             '</div>';
         })
         .catch(function(err) {
