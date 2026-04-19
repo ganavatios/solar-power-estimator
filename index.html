@@ -526,22 +526,45 @@
         '&aspect=' + azimuth;
       
       var url;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (isLocal) {
         // Local development: use local Python proxy
         url = '/api/pvgis?' + apiParams;
+        console.log('Modo LOCAL: usando proxy Python local');
       } else {
         // Production: use our Vercel serverless function
-        // Replace this URL with your deployed Vercel function URL
+        // TODO: Replace this URL with your deployed Vercel function URL
         url = 'https://solar-power-estimator.vercel.app/api/pvgis?' + apiParams;
+        console.log('Modo PRODUCCIÓN: usando Vercel serverless function');
       }
 
-      console.log('Consultando PVGIS API a través de nuestro proxy:', url);
+      console.log('URL de la petición:', url);
 
       fetch(url)
         .then(function(response) {
-          if (!response.ok) {
-            throw new Error('Error HTTP: ' + response.status);
+          console.log('Estado de respuesta:', response.status, response.statusText);
+          
+          // Si es local y obtenemos un 404, el servidor no está corriendo
+          if (isLocal && response.status === 404) {
+            throw new Error('⚠️ El servidor local no está corriendo o no tiene el proxy configurado.\n\n' +
+              'Por favor, inicia el servidor con:\n' +
+              '• PowerShell: .\\scripts\\start-server.ps1\n' +
+              '• CMD: .\\scripts\\start-server.bat\n' +
+              '• Manual: cd scripts && python server.py');
           }
+          
+          if (!response.ok) {
+            throw new Error('Error HTTP: ' + response.status + ' - ' + response.statusText);
+          }
+          
+          // Verificar que el contenido sea JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('La respuesta no es JSON. Tipo de contenido: ' + contentType + 
+              '\n\nEsto indica que el servidor no está corriendo correctamente.');
+          }
+          
           return response.json();
         })
         .then(function(data) {
@@ -618,14 +641,34 @@
         })
         .catch(function(err) {
           console.error('Error completo:', err);
+          
+          var errorMessage = err.message;
+          var isServerError = errorMessage.includes('servidor local') || 
+                             errorMessage.includes('no está corriendo');
+          
+          var tips = '';
+          if (isServerError) {
+            tips = 
+              '<small>📝 <strong>Cómo iniciar el servidor:</strong></small><br>' +
+              '<small>1. <strong>PowerShell:</strong> <code>.\\scripts\\start-server.ps1</code></small><br>' +
+              '<small>2. <strong>CMD:</strong> <code>.\\scripts\\start-server.bat</code></small><br>' +
+              '<small>3. <strong>Manual:</strong> <code>cd scripts && python server.py</code></small>';
+          } else {
+            tips =
+              '<small>💡 <strong>Consejos:</strong></small><br>' +
+              '<small>• Verifica tu conexión a internet</small><br>' +
+              '<small>• Asegúrate de haber seleccionado una ubicación válida en el mapa</small><br>' +
+              '<small>• Si estás en local, verifica que el servidor esté corriendo</small><br>' +
+              '<small>• Revisa la consola del navegador (F12) para más detalles</small>';
+          }
+          
           resultsDiv.innerHTML = 
             '<div class="result-item error">' +
             '<strong>❌ Error al calcular:</strong><br>' +
-            err.message + '<br><br>' +
-            '<small>Consejos:</small><br>' +
-            '<small>• Verifica tu conexión a internet</small><br>' +
-            '<small>• Asegúrate de haber seleccionado una ubicación válida en el mapa</small><br>' +
-            '<small>• Revisa la consola del navegador (F12) para más detalles</small>' +
+            '<pre style="white-space: pre-wrap; font-family: monospace; background: #f5f5f5; padding: 10px; border-radius: 3px; margin: 10px 0;">' +
+            errorMessage +
+            '</pre>' +
+            tips +
             '</div>';
         });
     });
