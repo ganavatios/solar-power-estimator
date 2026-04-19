@@ -20,6 +20,8 @@ class ProxyHandler(SimpleHTTPRequestHandler):
         # Check if it's an API request
         if parsed_path.path == '/api/pvgis':
             self.handle_pvgis_request(parsed_path)
+        elif parsed_path.path == '/api/pvpc-prices':
+            self.handle_pvpc_prices_request(parsed_path)
         else:
             # Serve static files normally
             super().do_GET()
@@ -63,6 +65,77 @@ class ProxyHandler(SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             error_response = json.dumps({'error': str(e)})
+            self.wfile.write(error_response.encode())
+    
+    def handle_pvpc_prices_request(self, parsed_path):
+        """Proxy requests to PVPC prices API"""
+        try:
+            from datetime import datetime
+            
+            # Parse query parameters
+            params = parse_qs(parsed_path.query)
+            country = params.get('country', ['ES'])[0]
+            
+            # For Spain, fetch PVPC prices
+            if country == 'ES':
+                today = datetime.now()
+                year = today.year
+                month = str(today.month).zfill(2)
+                day = str(today.day).zfill(2)
+                
+                pvpc_url = f'https://api.preciodelaluz.org/v1/prices/avg?zone=PCB&date={year}-{month}-{day}'
+                
+                print(f"Fetching PVPC prices from: {pvpc_url}")
+                
+                with urllib.request.urlopen(pvpc_url, timeout=10) as response:
+                    data = json.loads(response.read().decode())
+                    
+                    # Calculate average price (convert from €/MWh to €/kWh)
+                    avg_price = data.get('price', 150) / 1000 if 'price' in data else 0.15
+                    
+                    result = {
+                        'country': 'ES',
+                        'averagePrice': avg_price,
+                        'currency': 'EUR',
+                        'unit': 'kWh',
+                        'source': 'preciodelaluz.org',
+                        'date': f'{year}-{month}-{day}',
+                        'note': 'Daily average price. For accurate hourly matching, ESIOS API would be needed.'
+                    }
+                    
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps(result).encode())
+                    
+            else:
+                # Fallback for other countries
+                result = {
+                    'country': country,
+                    'averagePrice': 0.15,
+                    'currency': 'EUR',
+                    'unit': 'kWh',
+                    'source': 'estimate',
+                    'note': 'Estimated average price. Real-time pricing not available for this region.'
+                }
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(result).encode())
+                
+        except Exception as e:
+            print(f"Error fetching PVPC prices: {e}")
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            error_response = json.dumps({
+                'error': str(e),
+                'fallbackPrice': 0.15
+            })
             self.wfile.write(error_response.encode())
     
     def end_headers(self):

@@ -137,7 +137,8 @@
           <input type="radio" id="tariffPvpc" name="tariff" value="pvpc" checked>
           <label for="tariffPvpc" id="labelTariffPvpc" style="display:inline;">PVPC (precio medio 0.15 €/kWh)</label>
         </div>
-        <div>
+        <small id="helpTariffPvpc" style="color:#666; margin-left:20px; display:block; margin-top:3px;">Para España, se consultarán los precios reales del mercado eléctrico</small>
+        <div style="margin-top:8px;">
           <input type="radio" id="tariffFixed" name="tariff" value="fixed">
           <label for="tariffFixed" id="labelTariffFixed" style="display:inline;">Tarifa fija personalizada</label>
         </div>
@@ -243,6 +244,7 @@
       document.getElementById('helpSystemLoss').textContent = translations.systemLossHelp;
       document.getElementById('labelTariffType').textContent = translations.tariffType;
       document.getElementById('labelTariffPvpc').textContent = translations.tariffPvpc;
+      document.getElementById('helpTariffPvpc').textContent = translations.helpTariffPvpc;
       document.getElementById('labelTariffFixed').textContent = translations.tariffFixed;
       document.getElementById('labelPriceFixed').textContent = translations.priceFixed;
       document.getElementById('priceFixed').placeholder = translations.priceFixedPlaceholder;
@@ -527,20 +529,19 @@
         return;
       }
 
-      // Determine price per kWh
-      var pricePerKWh = 0;
-      if (tariffType === 'pvpc') {
-        pricePerKWh = 0.15; // Precio promedio PVPC
-      } else if (tariffType === 'fixed') {
-        pricePerKWh = priceFixed;
-      }
-
       // Use selected location or fallback to default
       var lat = selectedLat;
       var lng = selectedLng;
       if (lat === null || lng === null) {
         alert(translations.alertSelectLocation || 'Por favor, permite la geolocalización o haz clic en el mapa para seleccionar una ubicación.');
         return;
+      }
+
+      // Detect country based on coordinates
+      // Spain: latitude 36-44, longitude -10 to 5
+      var country = 'unknown';
+      if (lat >= 36 && lat <= 44 && lng >= -10 && lng <= 5) {
+        country = 'ES';
       }
 
       // Show progress bar
@@ -553,45 +554,98 @@
       progressContainer.classList.add('active');
       progressBar.style.width = '0%';
       progressMessage.textContent = translations.calculating || 'Consultando datos de radiación solar...';
-      
-      // Animate progress bar
-      setTimeout(function() { progressBar.style.width = '30%'; }, 100);
-      setTimeout(function() { 
-        progressBar.style.width = '60%';
-        progressMessage.textContent = translations.processingData || 'Procesando datos de PVGIS...';
-      }, 500);
 
-      // Call PVGIS API
-      // Local: use local Python proxy server
-      // Production: use Vercel serverless function (our own proxy)
-      // API documentation: https://joint-research-centre.ec.europa.eu/pvgis-online-tool/pvgis-data-download/api-pvgis_en
-      
-      var apiParams = 'lat=' + lat +
-        '&lon=' + lng +
-        '&peakpower=' + panelPower +
-        '&loss=' + systemLoss +
-        '&angle=' + tilt +
-        '&aspect=' + azimuth;
-      
-      var url;
-      var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      
-      if (isLocal) {
-        // Local development: use local Python proxy
-        url = '/api/pvgis?' + apiParams;
-        console.log('Modo LOCAL: usando proxy Python local');
-      } else {
-        // Production: use our Vercel serverless function
-        // IMPORTANT: You must deploy to Vercel first and update this URL
-        // See api/README.md for deployment instructions
-        url = 'https://solar-power-estimator-rho.vercel.app/api/pvgis?' + apiParams;
-        console.log('Modo PRODUCCIÓN: usando Vercel serverless function');
-        console.log('⚠️ Si ves errores, verifica que Vercel esté desplegado. Ver api/README.md');
+      // Function to fetch PVPC prices if needed
+      function fetchPriceAndCalculate() {
+        if (tariffType === 'pvpc' && country === 'ES') {
+          // Fetch real PVPC prices for Spain
+          progressBar.style.width = '15%';
+          progressMessage.textContent = translations.fetchingPrices || 'Obteniendo precios de electricidad...';
+          
+          var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          var pricesUrl = isLocal 
+            ? '/api/pvpc-prices?country=ES'
+            : 'https://solar-power-estimator-rho.vercel.app/api/pvpc-prices?country=ES';
+          
+          console.log('Fetching PVPC prices from:', pricesUrl);
+          
+          fetch(pricesUrl)
+            .then(function(response) {
+              if (!response.ok) {
+                console.warn('PVPC API error, using fallback price');
+                return { averagePrice: 0.15, source: 'fallback' };
+              }
+              return response.json();
+            })
+            .then(function(priceData) {
+              console.log('PVPC price data:', priceData);
+              var pricePerKWh = priceData.averagePrice || 0.15;
+              var priceSource = priceData.source || 'unknown';
+              
+              // Update progress
+              progressBar.style.width = '30%';
+              progressMessage.textContent = translations.calculating || 'Consultando datos de radiación solar...';
+              
+              // Continue with PVGIS calculation
+              calculateWithPrice(pricePerKWh, priceSource);
+            })
+            .catch(function(err) {
+              console.error('Error fetching PVPC prices:', err);
+              // Fallback to default price
+              progressMessage.textContent = translations.errorFetchingPrices || 'No se pudieron obtener precios PVPC. Usando precio estimado.';
+              setTimeout(function() {
+                progressBar.style.width = '30%';
+                progressMessage.textContent = translations.calculating || 'Consultando datos de radiación solar...';
+                calculateWithPrice(0.15, 'fallback');
+              }, 1000);
+            });
+        } else {
+          // Use fixed price
+          var pricePerKWh = tariffType === 'fixed' ? priceFixed : 0.15;
+          progressBar.style.width = '30%';
+          calculateWithPrice(pricePerKWh, 'fixed');
+        }
       }
+      
+      // Function to calculate savings with given price
+      function calculateWithPrice(pricePerKWh, priceSource) {
+        // Animate progress bar
+        setTimeout(function() { 
+          progressBar.style.width = '60%';
+          progressMessage.textContent = translations.processingData || 'Procesando datos de PVGIS...';
+        }, 500);
 
-      console.log('URL de la petición:', url);
+        // Call PVGIS API
+        // Local: use local Python proxy server
+        // Production: use Vercel serverless function (our own proxy)
+        // API documentation: https://joint-research-centre.ec.europa.eu/pvgis-online-tool/pvgis-data-download/api-pvgis_en
+        
+        var apiParams = 'lat=' + lat +
+          '&lon=' + lng +
+          '&peakpower=' + panelPower +
+          '&loss=' + systemLoss +
+          '&angle=' + tilt +
+          '&aspect=' + azimuth;
+        
+        var url;
+        var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        if (isLocal) {
+          // Local development: use local Python proxy
+          url = '/api/pvgis?' + apiParams;
+          console.log('Modo LOCAL: usando proxy Python local');
+        } else {
+          // Production: use our Vercel serverless function
+          // IMPORTANT: You must deploy to Vercel first and update this URL
+          // See api/README.md for deployment instructions
+          url = 'https://solar-power-estimator-rho.vercel.app/api/pvgis?' + apiParams;
+          console.log('Modo PRODUCCIÓN: usando Vercel serverless function');
+          console.log('⚠️ Si ves errores, verifica que Vercel esté desplegado. Ver api/README.md');
+        }
 
-      fetch(url)
+        console.log('URL de la petición:', url);
+
+        fetch(url)
         .then(function(response) {
           console.log('Estado de respuesta:', response.status, response.statusText);
           
@@ -701,7 +755,10 @@
             '<strong>' + (translations.resultEstimatedSavings || '💰 Ahorro económico estimado:') + '</strong><br>' +
             '• ' + (translations.resultAnnualLabel || 'Anual:') + ' <strong>' + annualSavings.toFixed(2) + ' €/' + (translations.year || 'año') + '</strong><br>' +
             '• ' + (translations.resultMonthlyLabel || 'Mensual:') + ' <strong>' + monthlySavings.toFixed(2) + ' €/' + (translations.month || 'mes') + '</strong><br>' +
-            '<small>(' + (translations.resultPriceLabel || 'Precio:') + ' ' + pricePerKWh.toFixed(3) + ' €/kWh)</small>' +
+            '<small>(' + (translations.resultPriceLabel || 'Precio:') + ' ' + pricePerKWh.toFixed(3) + ' €/kWh' +
+            (priceSource === 'preciodelaluz.org' ? ' - ' + (translations.pvpcDataSource || 'Precios obtenidos de') + ' preciodelaluz.org' : '') +
+            (priceSource === 'fallback' ? ' - ' + (translations.errorFetchingPrices || 'estimado') : '') +
+            ')</small>' +
             '</div>' +
             '<div class="result-item" style="background:#fff9e6; border-left-color:#ffc107;">' +
             '<strong>🔗 ' + (translations.pvgisLink || 'Ver en PVGIS:') + '</strong><br>' +
@@ -757,6 +814,10 @@
             tips +
             '</div>';
         });
+      } // End of calculateWithPrice function
+      
+      // Start the calculation flow
+      fetchPriceAndCalculate();
     });
   </script>
 </body>

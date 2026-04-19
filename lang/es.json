@@ -15,7 +15,9 @@
   "systemLossPlaceholder": "Ej: 14",
   "systemLossHelp": "Incluye pérdidas por cables, inversor, suciedad, etc.",
   "tariffType": "Tipo de tarifa eléctrica",
-  "tariffPvpc": "PVPC (precio medio 0.15 €/kWh)",
+  "tariffPvpc": "PVPC (precio real por franjas horarias)",
+  "tariffPvpcNote": "Calcula con precios reales del mercado eléctrico",
+  "helpTariffPvpc": "Para España, se consultarán los precios reales del mercado eléctrico",
   "tariffFixed": "Tarifa fija personalizada",
   "priceFixed": "Precio promedio (€/kWh)",
   "priceFixedPlaceholder": "Ej: 0.18",
@@ -72,5 +74,10 @@
   "resultDataSource": "📌 Datos proporcionados por PVGIS © European Communities, 2001-2024",
   "errorZeroProduction": "La producción anual es 0. Revisa los parámetros o la ubicación",
   "errorNoData": "No se encontraron datos de totales en la respuesta",
-  "errorInvalidData": "La API no devolvió datos válidos. Estructura:"
+  "errorInvalidData": "La API no devolvió datos válidos. Estructura:",
+  "fetchingPrices": "Obteniendo precios de electricidad...",
+  "calculatingWithRealPrices": "Calculando ahorro con precios reales...",
+  "pvpcAveragePrice": "Precio medio PVPC:",
+  "pvpcDataSource": "Precios obtenidos de",
+  "errorFetchingPrices": "No se pudieron obtener precios PVPC. Usando precio estimado."
 }
