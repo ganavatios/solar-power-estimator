@@ -9,9 +9,14 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     crossorigin="">
   <style>
-    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:row; height:100vh; background:#fafafa;}
-    #map {flex:1; min-height:400px; height:100%; order:2;}
-    .container {flex:1; padding:20px; box-sizing:border-box; background:#ffffff; overflow-y:auto; order:1;}
+    body {font-family: Arial, sans-serif; margin:0; padding:0; background:#fafafa; height:100vh; overflow:hidden;}
+    .container {width:100%; height:100vh; display:flex; flex-direction:row; position:relative;}
+    .container > *:not(#map) {flex-shrink:0;}
+    
+    /* Wrapper para el contenido del formulario */
+    .content-wrapper {width:50%; padding:20px; box-sizing:border-box; background:#ffffff; overflow-y:auto; display:flex; flex-direction:column;}
+    #map {width:50%; height:100%; position:relative;}
+    
     .form-group {margin-bottom:10px;}
     label {display:block; margin-bottom:5px;}
     input, select, button {width:100%; padding:8px; box-sizing:border-box;}
@@ -81,28 +86,28 @@
     
     /* Mobile responsive */
     @media (max-width: 768px) {
-      body {flex-direction:column; height:auto;}
-      .container {display:flex; flex-direction:column; order:1; width:100%; height:auto;}
-      #map {order:2; height:400px; min-height:400px; width:100%;}
+      body {height:auto; overflow:auto;}
+      .container {flex-direction:column; height:auto;}
+      .content-wrapper {width:100%; display:flex; flex-direction:column;}
+      #map {width:100%; height:400px; min-height:400px; order:4;}
       
       /* Mostrar selector móvil y ocultar el del header */
       .lang-selector-mobile {display:flex; order:1; justify-content:center; margin-bottom:15px;}
       .header-container .lang-selector {display:none;}
       
-      /* Reorganizar elementos dentro del container */
+      /* Reorganizar elementos dentro del content-wrapper */
       .logo-header {order:2; margin-bottom:15px;}
       .logo-header img {max-width:220px;}
       .header-container {order:3; flex-direction:column; text-align:center; margin-bottom:15px;}
-      .header-container h1 {font-size:1.3em; margin-bottom:10px;}
+      .header-container h1 {font-size:1.3em; margin-bottom:0;}
       
-      /* El resto del formulario sigue en orden natural después */
-      #getLocationBtn {order:4;}
-      #mapInstruction {order:5;}
-      #locationInfo {order:6;}
-      #inputForm {order:7;}
-      .progress-container {order:8;}
-      #results {order:9;}
-      .footer {order:10;}
+      #getLocationBtn {order:5;}
+      #mapInstruction {order:6;}
+      #locationInfo {order:7;}
+      #inputForm {order:8;}
+      .progress-container {order:9;}
+      #results {order:10;}
+      .footer {order:11;}
       
       /* Ajustes de tamaño para móvil */
       .compass {width:100px; height:100px;}
@@ -113,43 +118,44 @@
 </head>
 <body>
   <div class="container">
-    <div class="lang-selector lang-selector-mobile">
-      <svg class="lang-flag" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
-        <rect width="900" height="600" fill="#c60b1e"/>
-        <rect width="900" height="300" y="150" fill="#ffc400"/>
-      </svg>
-      <svg class="lang-flag" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
-        <clipPath id="s2"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
-        <clipPath id="t2"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
-        <g clip-path="url(#s2)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
-        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
-        <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t2)" stroke="#C8102E" stroke-width="4"/>
-        <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
-        <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
-      </svg>
-    </div>
-    <div class="logo-header">
-      <img src="logo.png" alt="GanaVatios - Ahorro Inteligente">
-    </div>
-    <div class="header-container">
-      <h1 id="heading">Calculador de Ahorro con Paneles Solares</h1>
-      <div class="lang-selector">
-        <svg class="lang-flag" id="langES" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+    <div class="content-wrapper">
+      <div class="lang-selector lang-selector-mobile">
+        <svg class="lang-flag" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
           <rect width="900" height="600" fill="#c60b1e"/>
           <rect width="900" height="300" y="150" fill="#ffc400"/>
         </svg>
-        <svg class="lang-flag" id="langEN" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
-          <clipPath id="s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
-          <clipPath id="t"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
-          <g clip-path="url(#s)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+        <svg class="lang-flag" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+          <clipPath id="s2"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+          <clipPath id="t2"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
+          <g clip-path="url(#s2)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
           <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
-          <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t)" stroke="#C8102E" stroke-width="4"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t2)" stroke="#C8102E" stroke-width="4"/>
           <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
           <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
         </svg>
       </div>
-    </div>
-    <button class="location-btn" id="getLocationBtn">
+      <div class="logo-header">
+        <img src="logo.png" alt="GanaVatios - Ahorro Inteligente">
+      </div>
+      <div class="header-container">
+        <h1 id="heading">Calculador de Ahorro con Paneles Solares</h1>
+        <div class="lang-selector">
+          <svg class="lang-flag" id="langES" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+            <rect width="900" height="600" fill="#c60b1e"/>
+            <rect width="900" height="300" y="150" fill="#ffc400"/>
+          </svg>
+          <svg class="lang-flag" id="langEN" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+            <clipPath id="s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+            <clipPath id="t"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
+            <g clip-path="url(#s)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+            <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t)" stroke="#C8102E" stroke-width="4"/>
+            <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+            <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
+          </svg>
+        </div>
+      </div>
+      <button class="location-btn" id="getLocationBtn">
       <span>📍</span>
       <span id="getLocationText">Obtener mi ubicación</span>
     </button>
@@ -243,9 +249,9 @@
         <a href="#" id="contactLink">📧 <span id="contactText">Contact us</span></a>
       </div>
     </div>
+    </div>
+    <div id="map"></div>
   </div>
-
-  <div id="map"></div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
