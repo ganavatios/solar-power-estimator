@@ -4,21 +4,21 @@
   <meta charset="UTF-8">
   <title>Calculador de Ahorro Solar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="icono.png" type="image/png">
+  <link rel="icon" href="logo.png" type="image/png">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     crossorigin="">
   <style>
-    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:row; height:100vh; background:#f5f5f5;}
+    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:row; height:100vh; background:#fafafa;}
     #map {flex:1; min-height:400px; height:100%;}
-    .container {width:400px; padding:20px; box-sizing:border-box; background:#ffffff; overflow-y:auto; border-left:3px solid #43A047;}
+    .container {width:400px; padding:20px; box-sizing:border-box; background:#ffffff; overflow-y:auto;}
     .form-group {margin-bottom:10px;}
     label {display:block; margin-bottom:5px;}
     input, select, button {width:100%; padding:8px; box-sizing:border-box;}
     button {background:#43A047; color:#fff; border:none; cursor:pointer; margin-top:10px; border-radius:5px; font-weight:500;}
     button:hover {background:#388E3C;}
-    #results {margin-top:20px; padding:15px; background:#fff; border:1px solid #ccc; border-radius:5px;}
-    .result-item {margin:10px 0; padding:10px; background:#E8F5E9; border-left:4px solid #43A047;}
+    #results {margin-top:20px; padding:15px; background:#fff; border-radius:5px;}
+    .result-item {margin:10px 0; padding:12px; background:#E8F5E9; border-left:3px solid #43A047; border-radius:3px;}
     .error {background:#ffe6e6; border-left-color:#dc3545;}
     
     /* Compass styles */
@@ -45,20 +45,22 @@
     .tilt-angle-label {position:absolute; top:15px; left:75px; font-size:16px; font-weight:bold; color:#43A047; background:white; padding:3px 8px; border-radius:3px; border:1px solid #43A047;}
     
     /* Language selector */
-    .lang-selector {text-align:right; margin-bottom:15px;}
-    .lang-selector select {width:auto; display:inline-block; padding:5px;}
-    .header-container {display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+    .lang-selector {display:flex; gap:8px; align-items:center;}
+    .lang-flag {cursor:pointer; opacity:0.5; transition:opacity 0.2s; width:32px; height:32px; border-radius:4px; border:2px solid transparent;}
+    .lang-flag:hover {opacity:0.8;}
+    .lang-flag.active {opacity:1; border-color:#43A047;}
+    .header-container {display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;}
     .header-container h1 {margin:0; font-size:1.5em;}
-    .logo-header {text-align:center; margin-bottom:15px; padding:15px 0; background:linear-gradient(135deg, #E8F5E9 0%, #E1F5FE 100%); border-radius:10px;}
-    .logo-header img {max-width:250px; height:auto;}
+    .logo-header {text-align:center; margin-bottom:20px;}
+    .logo-header img {max-width:280px; height:auto;}
     
     /* Footer */
-    .footer {margin-top:20px; padding:15px 0; border-top:2px solid #43A047; text-align:center; font-size:0.85em; color:#666; background:linear-gradient(135deg, #E8F5E9 0%, #E1F5FE 100%); border-radius:5px;}
+    .footer {margin-top:20px; padding:20px 0 10px 0; border-top:1px solid #e0e0e0; text-align:center; font-size:0.85em; color:#666;}
     .footer a {color:#2E87AC; text-decoration:none; font-weight:500;}
     .footer a:hover {text-decoration:underline; color:#43A047;}
     .version-info {margin-bottom:5px;}
-    .logo-footer {margin-bottom:10px;}
-    .logo-footer img {max-width:150px; height:auto; opacity:0.8;}
+    .logo-footer {margin-bottom:12px;}
+    .logo-footer img {max-width:140px; height:auto; opacity:0.7;}
     
     /* Location button */
     .location-btn {background:#2E87AC; color:#fff; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-size:14px; display:flex; align-items:center; gap:8px; margin-bottom:10px;}
@@ -66,7 +68,7 @@
     .location-btn:disabled {background:#6c757d; cursor:not-allowed;}
     
     /* Progress bar */
-    .progress-container {display:none; margin:20px 0; padding:15px; background:#fff; border:1px solid #ccc; border-radius:5px;}
+    .progress-container {display:none; margin:20px 0; padding:15px; background:#fafafa; border-radius:8px;}
     .progress-container.active {display:block;}
     .progress-bar-wrapper {width:100%; height:30px; background:#e9ecef; border-radius:15px; overflow:hidden; position:relative;}
     .progress-bar {height:100%; background:linear-gradient(90deg, #2E87AC, #43A047); width:0%; transition:width 0.3s ease; position:relative; border-radius:15px;}
@@ -84,10 +86,21 @@
     </div>
     <div class="header-container">
       <h1 id="heading">Calculador de Ahorro con Paneles Solares</h1>
-      <select id="langSelector" class="lang-selector">
-        <option value="en">English</option>
-        <option value="es">Español</option>
-      </select>
+      <div class="lang-selector">
+        <svg class="lang-flag" id="langES" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+          <rect width="900" height="600" fill="#c60b1e"/>
+          <rect width="900" height="300" y="150" fill="#ffc400"/>
+        </svg>
+        <svg class="lang-flag" id="langEN" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+          <clipPath id="s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+          <clipPath id="t"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
+          <g clip-path="url(#s)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t)" stroke="#C8102E" stroke-width="4"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
+        </svg>
+      </div>
     </div>
     <button class="location-btn" id="getLocationBtn">
       <span>📍</span>
@@ -268,12 +281,27 @@
       
       // Update contact link with current date/time
       updateContactLink();
+      
+      // Update flag selector visual state
+      updateFlagSelector();
     }
 
-    // Language selector
-    document.getElementById('langSelector').value = currentLang;
-    document.getElementById('langSelector').addEventListener('change', function(e) {
-      loadLanguage(e.target.value);
+    // Update flag selector visual state
+    function updateFlagSelector() {
+      document.querySelectorAll('.lang-flag').forEach(flag => {
+        if (flag.dataset.lang === currentLang) {
+          flag.classList.add('active');
+        } else {
+          flag.classList.remove('active');
+        }
+      });
+    }
+
+    // Language flag selector
+    document.querySelectorAll('.lang-flag').forEach(flag => {
+      flag.addEventListener('click', function() {
+        loadLanguage(this.dataset.lang);
+      });
     });
 
     // Load initial language
