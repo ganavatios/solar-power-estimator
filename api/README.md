@@ -60,10 +60,10 @@ vercel
 En `index.html`, busca esta línea:
 
 ```javascript
-url = 'https://solar-power-estimator.vercel.app/api/pvgis?' + apiParams;
+url = 'https://solar-power-estimator-rho.vercel.app/api/pvgis?' + apiParams;
 ```
 
-Reemplaza `solar-power-estimator.vercel.app` con tu URL real de Vercel.
+Reemplaza `solar-power-estimator-rho.vercel.app` con tu URL real de Vercel.
 
 ## Testing Local
 
