@@ -15,7 +15,17 @@ Aplicación web para calcular el ahorro económico de una instalación de panele
 
 ## 🚀 Inicio Rápido
 
-### Opción 1: Script automatizado (Recomendado)
+### GitHub Pages (Producción)
+
+La aplicación está desplegada en: **https://ganavatios.github.io/solar-power-estimator/**
+
+> **Nota**: En producción, la aplicación llama directamente a la API de PVGIS sin proxy. PVGIS permite CORS para solicitudes desde navegadores.
+
+### Desarrollo Local
+
+Para desarrollo local, usa el servidor proxy para evitar posibles problemas de CORS:
+
+#### Opción 1: Script automatizado (Recomendado)
 
 **Windows (PowerShell):**
 ```powershell
@@ -138,9 +148,38 @@ Para añadir un nuevo idioma:
 
 ## ⚠️ Notas Importantes
 
+### Desarrollo vs Producción
+
+**Desarrollo Local:**
+- Requiere ejecutar `server.py` para el proxy PVGIS
+- Usa rutas absolutas con proxy local (`/api/pvgis`)
+- La detección automática identifica `localhost` o `127.0.0.1`
+
+**GitHub Pages (Producción):**
+- Llama directamente a PVGIS API (`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc`)
+- PVGIS permite solicitudes CORS desde navegadores
+- No requiere servidor proxy
+- Rutas relativas para recursos estáticos
+
+### Requisitos
+
 - Requiere conexión a internet para consultar la API de PVGIS
-- Debe ejecutarse a través de un servidor HTTP (no como archivo file://)
-- Los cálculos son estimaciones basadas en datos históricos
+- Para desarrollo: Python 3.x para ejecutar `server.py`
+- Navegadores modernos con soporte para:
+  - Geolocalización API
+  - Fetch API
+  - ES6+ JavaScript
+
+## 🌐 Despliegue en GitHub Pages
+
+El proyecto se despliega automáticamente en GitHub Pages cuando se hace push a la rama `main`:
+
+1. Los cambios se pushean a `main`
+2. GitHub Actions ejecuta el workflow de versionado (incrementa versión)
+3. GitHub Pages sirve automáticamente los archivos estáticos
+4. La aplicación está disponible en: `https://ganavatios.github.io/solar-power-estimator/`
+
+No se requiere configuración adicional. El código detecta automáticamente si está en producción o desarrollo local.
 
 ## 📄 Licencia
 
