@@ -2,93 +2,339 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Estimador de Producción Solar</title>
+  <title>Calculador de Ahorro Solar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FFA500'/><circle cx='50' cy='50' r='20' fill='%23FFD700'/></svg>">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-sA+e2b3c6e+g8cG6c6X+6tXf5Yz6X0b6c8v+8Y5X+6w="
     crossorigin="">
   <style>
-    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:column; height:100vh;}
-    #map {flex:1; width:100%;}
-    .container {padding:10px; box-sizing:border-box; background:#f9f9f9;}
+    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:row; height:100vh;}
+    #map {flex:1; min-height:400px; height:100%;}
+    .container {width:400px; padding:20px; box-sizing:border-box; background:#f9f9f9; overflow-y:auto;}
     .form-group {margin-bottom:10px;}
     label {display:block; margin-bottom:5px;}
     input, select, button {width:100%; padding:8px; box-sizing:border-box;}
-    #results {margin-top:20px; padding:10px; background:#fff; border:1px solid #ccc;}
+    button {background:#007bff; color:#fff; border:none; cursor:pointer; margin-top:10px;}
+    button:hover {background:#0056b3;}
+    #results {margin-top:20px; padding:15px; background:#fff; border:1px solid #ccc; border-radius:5px;}
+    .result-item {margin:10px 0; padding:10px; background:#f0f8ff; border-left:4px solid #007bff;}
+    .error {background:#ffe6e6; border-left-color:#dc3545;}
+    
+    /* Compass styles */
+    .compass-container {display:flex; gap:15px; align-items:center; margin-top:10px;}
+    .compass {position:relative; width:120px; height:120px; border-radius:50%; background:#fff; border:3px solid #007bff; box-shadow:0 2px 8px rgba(0,0,0,0.1); margin:0 auto; cursor:pointer;}
+    .compass-center {position:absolute; top:50%; left:50%; width:8px; height:8px; background:#dc3545; border-radius:50%; transform:translate(-50%, -50%); z-index:3;}
+    .compass-cardinal {position:absolute; font-size:14px; font-weight:bold; color:#333;}
+    .compass-cardinal.n {top:5px; left:50%; transform:translateX(-50%); color:#dc3545;}
+    .compass-cardinal.s {bottom:5px; left:50%; transform:translateX(-50%);}
+    .compass-cardinal.e {right:5px; top:50%; transform:translateY(-50%);}
+    .compass-cardinal.w {left:5px; top:50%; transform:translateY(-50%);}
+    .compass-needle {position:absolute; top:50%; left:50%; width:2px; height:45px; background:linear-gradient(to bottom, #dc3545 0%, #dc3545 50%, #333 50%, #333 100%); transform-origin:50% 100%; transition:transform 0.3s ease; z-index:2; border-radius:2px;}
+    .compass-needle::before {content:''; position:absolute; top:-5px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:8px solid #dc3545;}
+    .azimuth-input-group {flex:1;}
+    
+    /* Tilt plane visualizer */
+    .tilt-container {display:flex; gap:15px; align-items:center; margin-top:10px;}
+    .tilt-input-group {flex:1;}
+    .tilt-visualizer {width:140px; height:100px; background:#f9f9f9; border:1px solid #ccc; border-radius:5px; position:relative; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
+    /* Panel line */
+    .panel-line {position:absolute; left:10px; bottom:10px; width:70px; height:3px; background:#2196F3; transform-origin:left center; transition:transform 0.3s ease; box-shadow:0 0 4px rgba(33,150,243,0.5);}
+    .panel-line::after {content:''; position:absolute; right:-6px; top:50%; width:0; height:0; border-left:6px solid #2196F3; border-top:4px solid transparent; border-bottom:4px solid transparent; transform:translateY(-50%);}
+    /* Angle label */
+    .tilt-angle-label {position:absolute; top:15px; left:75px; font-size:16px; font-weight:bold; color:#2196F3; background:white; padding:3px 8px; border-radius:3px; border:1px solid #2196F3;}
+    
+    /* Language selector */
+    .lang-selector {text-align:right; margin-bottom:15px;}
+    .lang-selector select {width:auto; display:inline-block; padding:5px;}
+    .header-container {display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+    .header-container h1 {margin:0; font-size:1.5em;}
+    
+    /* Footer */
+    .footer {margin-top:20px; padding:15px 0; border-top:1px solid #ddd; text-align:center; font-size:0.85em; color:#666;}
+    .footer a {color:#007bff; text-decoration:none;}
+    .footer a:hover {text-decoration:underline;}
+    .version-info {margin-bottom:5px;}
+    
+    /* Location button */
+    .location-btn {background:#28a745; color:#fff; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-size:14px; display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+    .location-btn:hover {background:#218838;}
+    .location-btn:disabled {background:#6c757d; cursor:not-allowed;}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Estimador de Producción Solar</h1>
+    <div class="header-container">
+      <h1 id="heading">Calculador de Ahorro con Paneles Solares</h1>
+      <select id="langSelector" class="lang-selector">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+    <button class="location-btn" id="getLocationBtn">
+      <span>📍</span>
+      <span id="getLocationText">Obtener mi ubicación</span>
+    </button>
+    <p><small id="mapInstruction">👈 Haz clic en el mapa para seleccionar tu ubicación</small></p>
+    <div id="locationInfo" style="padding:10px; background:#e3f2fd; border-radius:5px; margin-bottom:15px; display:none;">
+      <strong id="locationSelectedLabel">📍 Ubicación seleccionada:</strong><br>
+      <span id="coordsDisplay">-</span>
+    </div>
     <form id="inputForm">
       <div class="form-group">
-        <label for="panelPower">Potencia del panel (W)</label>
-        <input type="number" id="panelPower" placeholder="Ej: 300">
+        <label for="panelPower" id="labelPanelPower">Potencia instalada (Wp)</label>
+        <input type="number" id="panelPower" placeholder="Ej: 400" step="10" value="400">
       </div>
       <div class="form-group">
-        <label for="tilt">Inclinación (°) - Horizontal=0, Vertical=90</label>
-        <input type="number" id="tilt" placeholder="Ej: 30">
-      </div>
-      <div class="form-group">
-        <label for="azimuth">Azimut (°) - Dirección del panel</label>
-        <input type="number" id="azimuth" placeholder="Ej: 180">
-      </div>
-      <div class="form-group">
-        <label for="inverterEff">Eficiencia del inversor (%)</label>
-        <input type="number" id="inverterEff" placeholder="Ej: 96">
-      </div>
-      <div class="form-group">
-        <label>Tarifa</label>
-        <div class="form-group">
-          <input type="radio" id="tariffPvpc" name="tariff" value="pvpc" checked>
-          <label for="tariffPvpc">PVPC (horario variable)</label>
+        <label for="tilt" id="labelTilt">Inclinación de paneles (°)</label>
+        <div class="tilt-container">
+          <div class="tilt-input-group">
+            <input type="number" id="tilt" placeholder="Ej: 30" value="30" min="0" max="90">
+            <small id="helpTilt">Ajusta el valor o visualiza el plano. 0° = Horizontal, 90° = Vertical</small>
+          </div>
+          <div class="tilt-visualizer" id="tiltVisualizer">
+            <div class="tilt-angle-label" id="tiltAngleLabel">30°</div>
+            <div class="panel-line" id="panelLine"></div>
+          </div>
         </div>
-        <div class="form-group">
+      </div>
+      <div class="form-group">
+        <label for="azimuth" id="labelAzimuth">Orientación azimut (°)</label>
+        <div class="compass-container">
+          <div class="azimuth-input-group">
+            <input type="number" id="azimuth" placeholder="Ej: 0" value="0">
+            <small id="helpAzimuth">Haz clic en la brújula o escribe el valor. 0° = Sur, -90° = Este, 90° = Oeste, 180° = Norte</small>
+          </div>
+          <div class="compass" id="compassWidget">
+            <div class="compass-cardinal n">N</div>
+            <div class="compass-cardinal s">S</div>
+            <div class="compass-cardinal e">E</div>
+            <div class="compass-cardinal w">O</div>
+            <div class="compass-needle" id="compassNeedle"></div>
+            <div class="compass-center"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="systemLoss" id="labelSystemLoss">Pérdidas del sistema (%)</label>
+        <input type="number" id="systemLoss" placeholder="Ej: 14" value="14">
+        <small id="helpSystemLoss">Incluye pérdidas por cables, inversor, suciedad, etc.</small>
+      </div>
+      <div class="form-group">
+        <label id="labelTariffType">Tipo de tarifa eléctrica</label>
+        <div>
+          <input type="radio" id="tariffPvpc" name="tariff" value="pvpc" checked>
+          <label for="tariffPvpc" id="labelTariffPvpc" style="display:inline;">PVPC (precio medio 0.15 €/kWh)</label>
+        </div>
+        <div>
           <input type="radio" id="tariffFixed" name="tariff" value="fixed">
-          <label for="tariffFixed">Tarifa fija (valle/punta)</label>
+          <label for="tariffFixed" id="labelTariffFixed" style="display:inline;">Tarifa fija personalizada</label>
         </div>
       </div>
       <div id="fixedTariffFields" style="display:none;">
         <div class="form-group">
-          <label for="priceValle">Precio Valle (€/kWh)</label>
-          <input type="number" id="priceValle" step="0.0001" placeholder="Ej: 0.12">
-        </div>
-        <div class="form-group">
-          <label for="pricePunta">Precio Punta (€/kWh)</label>
-          <input type="number" id="pricePunta" step="0.0001" placeholder="Ej: 0.25">
+          <label for="priceFixed" id="labelPriceFixed">Precio promedio (€/kWh)</label>
+          <input type="number" id="priceFixed" step="0.01" placeholder="Ej: 0.18" value="0.18">
         </div>
       </div>
-      <button type="button" id="calcBtn">Calcular</button>
+      <button type="button" id="calcBtn">Calcular Ahorro</button>
     </form>
+    <div id="results"></div>
+    
+    <div class="footer">
+      <div class="version-info">
+        <span id="versionText">Version: </span><strong id="versionNumber">0.1.0</strong> | 
+        <span id="deployText">Deployed: </span><span id="deployDate">2026-04-19</span>
+      </div>
+      <div>
+        <a href="#" id="contactLink">📧 <span id="contactText">Contact us</span></a>
+      </div>
+    </div>
   </div>
 
   <div id="map"></div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1j8Y+XcJ2v4pX2Y5Y+2Z5x1gX2x5e5gX+6Z5gX="
     crossorigin=""></script>
   <script>
-    // Initialize map
-    var map = L.map('map').setView([40.4168, -3.7038], 10); // Default: Madrid
+    // Initialize map after DOM is ready
+    var map = L.map('map').setView([40.4168, -3.7038], 6); // Default: Madrid
+    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
     }).addTo(map);
+    
+    // Fix map size issues
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 100);
 
     // Variable to store selected location
     var selectedLat = null;
     var selectedLng = null;
 
-    // Geolocation on load
+    // Language management
+    let currentLang = 'es';
+    let translations = {};
+
+    // Detect browser language
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang.startsWith('es')) {
+      currentLang = 'es';
+    } else {
+      currentLang = 'en';
+    }
+
+    // Load language file
+    function loadLanguage(lang) {
+      return fetch(`/lang/${lang}.json`)
+        .then(response => response.json())
+        .then(data => {
+          translations = data;
+          currentLang = lang;
+          applyTranslations();
+          document.documentElement.lang = lang;
+          document.title = translations.title;
+        })
+        .catch(err => {
+          console.error('Error loading language file:', err);
+        });
+    }
+
+    // Apply translations to UI
+    function applyTranslations() {
+      document.getElementById('heading').textContent = translations.heading;
+      document.getElementById('mapInstruction').textContent = translations.mapInstruction;
+      document.getElementById('locationSelectedLabel').textContent = translations.locationSelected;
+      document.getElementById('labelPanelPower').textContent = translations.panelPower;
+      document.getElementById('panelPower').placeholder = translations.panelPowerPlaceholder;
+      document.getElementById('labelTilt').textContent = translations.tilt;
+      document.getElementById('tilt').placeholder = translations.tiltPlaceholder;
+      document.getElementById('helpTilt').textContent = translations.tiltHelp;
+      document.getElementById('labelAzimuth').textContent = translations.azimuth;
+      document.getElementById('azimuth').placeholder = translations.azimuthPlaceholder;
+      document.getElementById('helpAzimuth').textContent = translations.azimuthHelp;
+      document.getElementById('labelSystemLoss').textContent = translations.systemLoss;
+      document.getElementById('systemLoss').placeholder = translations.systemLossPlaceholder;
+      document.getElementById('helpSystemLoss').textContent = translations.systemLossHelp;
+      document.getElementById('labelTariffType').textContent = translations.tariffType;
+      document.getElementById('labelTariffPvpc').textContent = translations.tariffPvpc;
+      document.getElementById('labelTariffFixed').textContent = translations.tariffFixed;
+      document.getElementById('labelPriceFixed').textContent = translations.priceFixed;
+      document.getElementById('priceFixed').placeholder = translations.priceFixedPlaceholder;
+      document.getElementById('calcBtn').textContent = translations.calculateBtn;
+      
+      // Footer translations
+      document.getElementById('versionText').textContent = translations.versionText;
+      document.getElementById('deployText').textContent = translations.deployText;
+      document.getElementById('contactText').textContent = translations.contactText;
+      document.getElementById('getLocationText').textContent = translations.getLocationText;
+      
+      // Update contact link with current date/time
+      updateContactLink();
+    }
+
+    // Language selector
+    document.getElementById('langSelector').value = currentLang;
+    document.getElementById('langSelector').addEventListener('change', function(e) {
+      loadLanguage(e.target.value);
+    });
+
+    // Load initial language
+    loadLanguage(currentLang);
+
+    // Load version information
+    function loadVersion() {
+      fetch('/version.json')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('versionNumber').textContent = data.version;
+          document.getElementById('deployDate').textContent = data.date;
+        })
+        .catch(err => {
+          console.error('Error loading version:', err);
+        });
+    }
+
+    // Update contact link with current date/time
+    function updateContactLink() {
+      const now = new Date();
+      const dateTimeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+      const subject = encodeURIComponent(`[SPSC] - ${dateTimeStr} contact`);
+      const mailtoLink = `mailto:ganavatios@gmail.com?subject=${subject}`;
+      document.getElementById('contactLink').href = mailtoLink;
+    }
+
+    // Load version on page load
+    loadVersion();
+
+    // Function to get user's current location
+    function getUserLocation() {
+      if (!navigator.geolocation) {
+        alert(translations.locationError || 'Geolocalización no disponible en este navegador.');
+        return;
+      }
+
+      var locationBtn = document.getElementById('getLocationBtn');
+      var locationBtnText = document.getElementById('getLocationText');
+      
+      // Disable button and show loading state
+      locationBtn.disabled = true;
+      locationBtnText.textContent = translations.gettingLocation || 'Obteniendo ubicación...';
+
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        selectedLat = pos.coords.latitude;
+        selectedLng = pos.coords.longitude;
+        map.setView([selectedLat, selectedLng], 13);
+        
+        // Remove old markers
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.Marker) {
+            layer.remove();
+          }
+        });
+        
+        L.marker([selectedLat, selectedLng]).addTo(map)
+          .bindPopup(translations.popupCurrentLocation || 'Tu ubicación actual').openPopup();
+        
+        // Show coordinates
+        document.getElementById('locationInfo').style.display = 'block';
+        document.getElementById('coordsDisplay').textContent = 
+          selectedLat.toFixed(4) + '°N, ' + selectedLng.toFixed(4) + '°E';
+        
+        // Re-enable button
+        locationBtn.disabled = false;
+        locationBtnText.textContent = translations.getLocationText || 'Obtener mi ubicación';
+      }, function(err) {
+        console.warn('Error de geolocalización:', err);
+        alert(translations.locationError || 'No se pudo obtener la ubicación. Por favor, verifica los permisos del navegador.');
+        
+        // Re-enable button
+        locationBtn.disabled = false;
+        locationBtnText.textContent = translations.getLocationText || 'Obtener mi ubicación';
+      });
+    }
+
+    // Get location button handler
+    document.getElementById('getLocationBtn').addEventListener('click', getUserLocation);
+
+    // Geolocation on load (optional automatic detection)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
         selectedLat = pos.coords.latitude;
         selectedLng = pos.coords.longitude;
-        map.setView([selectedLat, selectedLng], 15);
-        L.marker([selectedLat, selectedLng]).addTo(map);
+        map.setView([selectedLat, selectedLng], 13);
+        L.marker([selectedLat, selectedLng]).addTo(map)
+          .bindPopup(translations.popupCurrentLocation || 'Tu ubicación actual').openPopup();
+        
+        // Show coordinates
+        document.getElementById('locationInfo').style.display = 'block';
+        document.getElementById('coordsDisplay').textContent = 
+          selectedLat.toFixed(4) + '°N, ' + selectedLng.toFixed(4) + '°E';
       }, function(err) {
-        console.warn('Geolocation failed:', err);
+        console.warn('Geolocalización automática no disponible:', err);
       });
     }
 
@@ -96,12 +342,23 @@
     map.on('click', function(e) {
       selectedLat = e.latlng.lat;
       selectedLng = e.latlng.lng;
+      
+      // Remove old markers
       map.eachLayer(function(layer) {
         if (layer instanceof L.Marker) {
           layer.remove();
         }
       });
-      L.marker([selectedLat, selectedLng]).addTo(map);
+      
+      // Add new marker with popup
+      L.marker([selectedLat, selectedLng]).addTo(map)
+        .bindPopup((translations.popupSelectedLocation || 'Ubicación seleccionada') + '<br>' + selectedLat.toFixed(4) + '°, ' + selectedLng.toFixed(4) + '°')
+        .openPopup();
+      
+      // Show coordinates
+      document.getElementById('locationInfo').style.display = 'block';
+      document.getElementById('coordsDisplay').textContent = 
+        selectedLat.toFixed(4) + '°N, ' + selectedLng.toFixed(4) + '°E';
     });
 
     // Show/hide fixed tariff fields
@@ -117,63 +374,247 @@
       });
     });
 
+    // Compass widget for azimuth selection
+    var azimuthInput = document.getElementById('azimuth');
+    var compassNeedle = document.getElementById('compassNeedle');
+    var compassWidget = document.getElementById('compassWidget');
+
+    // Update needle rotation based on azimuth value
+    function updateCompassNeedle(azimuth) {
+      // Convert azimuth to rotation (0° azimuth = South, pointing down)
+      // In standard compass: 0° = North (up), but in solar azimuth: 0° = South
+      // So we need to add 180° to align it correctly
+      var rotation = azimuth + 180;
+      compassNeedle.style.transform = 'translate(-50%, -100%) rotate(' + rotation + 'deg)';
+    }
+
+    // Initialize needle position
+    updateCompassNeedle(parseFloat(azimuthInput.value) || 0);
+
+    // Update needle when input changes
+    azimuthInput.addEventListener('input', function() {
+      var azimuth = parseFloat(this.value) || 0;
+      updateCompassNeedle(azimuth);
+    });
+
+    // Click on compass to set azimuth
+    compassWidget.addEventListener('click', function(e) {
+      var rect = compassWidget.getBoundingClientRect();
+      var centerX = rect.width / 2;
+      var centerY = rect.height / 2;
+      var clickX = e.clientX - rect.left - centerX;
+      var clickY = e.clientY - rect.top - centerY;
+      
+      // Calculate angle in degrees (0° = up/North, clockwise)
+      var angleRad = Math.atan2(clickX, -clickY);
+      var angleDeg = angleRad * (180 / Math.PI);
+      
+      // Convert to azimuth (0° = South)
+      // Standard compass: 0° = North (up)
+      // Solar azimuth: 0° = South, -90° = East, 90° = West, 180° = North
+      var azimuth = angleDeg - 180;
+      
+      // Normalize to -180 to 180 range
+      if (azimuth > 180) azimuth -= 360;
+      if (azimuth < -180) azimuth += 360;
+      
+      // Round to nearest degree
+      azimuth = Math.round(azimuth);
+      
+      azimuthInput.value = azimuth;
+      updateCompassNeedle(azimuth);
+    });
+
+    // Tilt visualizer for panel inclination
+    var tiltInput = document.getElementById('tilt');
+    var panelLine = document.getElementById('panelLine');
+    var tiltAngleLabel = document.getElementById('tiltAngleLabel');
+    var tiltVisualizer = document.getElementById('tiltVisualizer');
+
+    // Update panel line based on tilt angle
+    function updateTiltVisualizer(tilt) {
+      // Clamp tilt between 0 and 90
+      tilt = Math.max(0, Math.min(90, tilt));
+      
+      // Rotate the panel line (from horizontal up)
+      panelLine.style.transform = 'rotate(' + (-tilt) + 'deg)';
+      
+      // Update label
+      tiltAngleLabel.textContent = Math.round(tilt) + '°';
+    }
+
+    // Initialize tilt visualizer
+    updateTiltVisualizer(parseFloat(tiltInput.value) || 30);
+
+    // Update visualizer when input changes
+    tiltInput.addEventListener('input', function() {
+      var tilt = parseFloat(this.value) || 0;
+      updateTiltVisualizer(tilt);
+    });
+
+    // Click on tilt visualizer to set angle
+    tiltVisualizer.addEventListener('click', function(e) {
+      var rect = tiltVisualizer.getBoundingClientRect();
+      var clickX = e.clientX - rect.left;
+      var clickY = e.clientY - rect.top;
+      
+      // Calculate angle from bottom-left corner (10, rect.height - 10)
+      var originX = 10;
+      var originY = rect.height - 10;
+      
+      var deltaX = clickX - originX;
+      var deltaY = originY - clickY; // Y is inverted
+      
+      // Calculate angle (0° = horizontal, 90° = vertical)
+      var angleRad = Math.atan2(deltaY, deltaX);
+      var tilt = angleRad * (180 / Math.PI);
+      
+      // Clamp and round
+      tilt = Math.max(0, Math.min(90, Math.round(tilt)));
+      
+      tiltInput.value = tilt;
+      updateTiltVisualizer(tilt);
+    });
+
     // Calculate button handler
     document.getElementById('calcBtn').addEventListener('click', function() {
       // Get inputs
-      var panelPower = parseFloat(document.getElementById('panelPower').value) || 0;
+      var panelPowerWp = parseFloat(document.getElementById('panelPower').value) || 0;
+      var panelPower = panelPowerWp / 1000; // Convert Wp to kWp for API
       var tilt = parseFloat(document.getElementById('tilt').value) || 0;
       var azimuth = parseFloat(document.getElementById('azimuth').value) || 0;
-      var inverterEff = parseFloat(document.getElementById('inverterEff').value) || 96;
+      var systemLoss = parseFloat(document.getElementById('systemLoss').value) || 14;
       var tariffType = document.querySelector('input[name="tariff"]:checked').value;
-      var priceValle = parseFloat(document.getElementById('priceValle').value) || 0;
-      var pricePunta = parseFloat(document.getElementById('pricePunta').value) || 0;
+      var priceFixed = parseFloat(document.getElementById('priceFixed').value) || 0.18;
+
+      // Validate inputs
+      if (panelPower <= 0) {
+        alert(translations.alertInvalidPower || 'Por favor, introduce una potencia válida.');
+        return;
+      }
 
       // Determine price per kWh
       var pricePerKWh = 0;
       if (tariffType === 'pvpc') {
-        // For PVPC, we could fetch real-time data, but for demo use a placeholder
-        pricePerKWh = 0.15; // Approx average PVPC price
+        pricePerKWh = 0.15; // Precio promedio PVPC
       } else if (tariffType === 'fixed') {
-        // Weighted price: assume 50% valle, 50% punta (simplified)
-        pricePerKWh = (priceValle + pricePunta) / 2;
+        pricePerKWh = priceFixed;
       }
 
       // Use selected location or fallback to default
       var lat = selectedLat;
       var lng = selectedLng;
       if (lat === null || lng === null) {
-        alert('Por favor, permite la geolocalización o haz clic en el mapa para seleccionar una ubicación.');
+        alert(translations.alertSelectLocation || 'Por favor, permite la geolocalización o haz clic en el mapa para seleccionar una ubicación.');
         return;
       }
 
       // Show loading
       var resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = 'Calculando...';
+      resultsDiv.innerHTML = '<div class="result-item">' + (translations.calculating || '⏳ Consultando datos de radiación solar de PVGIS...') + '</div>';
 
-      // Call PVGIS API
-      var apiKey = 'demo'; // Test key for demonstration
-      var date = new Date().getFullYear(); // Use current year
-      var url = 'https://re.jrc.ec.europa.eu/api/v5_2/production/ac?lat=' + lat + '&lon=' + lng + '&date=' + date + '&apikey=' + apiKey + '&format=json&tilt=' + tilt + '&azimuth=' + azimuth + '&system_loss=14&module_type=PV250';
+      // Call PVGIS API through local proxy to avoid CORS issues
+      // API documentation: https://joint-research-centre.ec.europa.eu/pvgis-online-tool/pvgis-data-download/api-pvgis_en
+      var url = '/api/pvgis?' +
+        'lat=' + lat +
+        '&lon=' + lng +
+        '&peakpower=' + panelPower +
+        '&loss=' + systemLoss +
+        '&angle=' + tilt +
+        '&aspect=' + azimuth;
+
+      console.log('Consultando PVGIS API a través del proxy:', url);
 
       fetch(url)
         .then(function(response) {
           if (!response.ok) {
-            throw new Error('Error al obtener datos de PVGIS');
+            throw new Error('Error HTTP: ' + response.status);
           }
           return response.json();
         })
         .then(function(data) {
-          // Assume annual energy is the first value in the first output's values array
-          var annualProduction = data.outputs[0].values[0][1];
-          var productionKWh = parseFloat(annualProduction);
-          var savings = productionKWh * pricePerKWh;
-          resultsDiv.innerHTML = '<strong>Resultados:</strong><br>' +
-            'Producción anual estimada: <strong>' + productionKWh.toFixed(2) + ' kWh</strong><br>' +
-            'Ahorro anual estimado: <strong>' + savings.toFixed(2) + ' €</strong>';
+          console.log('Respuesta completa de PVGIS:', JSON.stringify(data, null, 2));
+          
+          // Parse PVGIS response - verificar estructura
+          if (!data.outputs) {
+            throw new Error('La API no devolvió datos válidos. Estructura: ' + JSON.stringify(Object.keys(data)));
+          }
+
+          // PVGIS puede devolver los datos en diferentes formatos
+          var totals = null;
+          
+          // Intentar acceder a los totales
+          if (data.outputs.totals) {
+            if (data.outputs.totals.fixed) {
+              totals = data.outputs.totals.fixed;
+            } else if (data.outputs.totals) {
+              totals = data.outputs.totals;
+            }
+          }
+          
+          if (!totals) {
+            console.error('Estructura de outputs:', data.outputs);
+            throw new Error('No se encontraron datos de totales en la respuesta');
+          }
+
+          console.log('Totales extraídos:', totals);
+
+          // Extraer valores con validación
+          var annualProductionKWh = totals.E_y || totals['E_y'] || 0;
+          var avgDailyProduction = totals.E_d || totals['E_d'] || 0;
+          var avgMonthlyProduction = totals.E_m || totals['E_m'] || 0;
+          var solarIrradiance = totals.H_sun_f || totals['H(i)_y'] || totals.H_i_y || 0;
+          
+          if (annualProductionKWh === 0) {
+            throw new Error('La producción anual es 0. Revisa los parámetros o la ubicación');
+          }
+          
+          var annualSavings = annualProductionKWh * pricePerKWh;
+          var monthlySavings = annualSavings / 12;
+
+          // Display results
+          resultsDiv.innerHTML = 
+            '<h3>📊 Resultados del Análisis Solar</h3>' +
+            '<div class="result-item">' +
+            '<strong>📍 Ubicación:</strong> ' + lat.toFixed(4) + '°, ' + lng.toFixed(4) + '°' +
+            '</div>' +
+            '<div class="result-item">' +
+            '<strong>⚡ Potencia instalada:</strong> ' + panelPowerWp + ' Wp (' + panelPower.toFixed(2) + ' kWp)' +
+            '</div>' +
+            (solarIrradiance > 0 ? 
+              '<div class="result-item">' +
+              '<strong>☀️ Radiación solar anual:</strong> ' + solarIrradiance.toFixed(0) + ' kWh/m²' +
+              '</div>' : '') +
+            '<div class="result-item">' +
+            '<strong>🔋 Producción anual:</strong> ' + annualProductionKWh.toFixed(2) + ' kWh/año' +
+            '</div>' +
+            (avgDailyProduction > 0 || avgMonthlyProduction > 0 ?
+              '<div class="result-item">' +
+              '<strong>📅 Producción promedio:</strong><br>' +
+              (avgDailyProduction > 0 ? '• Diaria: ' + avgDailyProduction.toFixed(2) + ' kWh/día<br>' : '') +
+              (avgMonthlyProduction > 0 ? '• Mensual: ' + avgMonthlyProduction.toFixed(2) + ' kWh/mes' : '') +
+              '</div>' : '') +
+            '<div class="result-item" style="background:#e6ffe6; border-left-color:#28a745;">' +
+            '<strong>💰 Ahorro económico estimado:</strong><br>' +
+            '• Anual: <strong>' + annualSavings.toFixed(2) + ' €/año</strong><br>' +
+            '• Mensual: <strong>' + monthlySavings.toFixed(2) + ' €/mes</strong><br>' +
+            '<small>(Precio: ' + pricePerKWh.toFixed(3) + ' €/kWh)</small>' +
+            '</div>' +
+            '<div class="result-item">' +
+            '<small>📌 Datos proporcionados por PVGIS © European Communities, 2001-2024</small>' +
+            '</div>';
         })
         .catch(function(err) {
-          resultsDiv.innerHTML = 'Error al calcular la producción. Revisa la consola para detalles.';
-          console.error('Fetch error:', err);
+          console.error('Error completo:', err);
+          resultsDiv.innerHTML = 
+            '<div class="result-item error">' +
+            '<strong>❌ Error al calcular:</strong><br>' +
+            err.message + '<br><br>' +
+            '<small>Consejos:</small><br>' +
+            '<small>• Verifica tu conexión a internet</small><br>' +
+            '<small>• Asegúrate de haber seleccionado una ubicación válida en el mapa</small><br>' +
+            '<small>• Revisa la consola del navegador (F12) para más detalles</small>' +
+            '</div>';
         });
     });
   </script>

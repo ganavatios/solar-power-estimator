@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculador de Ahorro Solar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FFA500'/><circle cx='50' cy='50' r='20' fill='%23FFD700'/></svg>">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin="">
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:row; height:100vh;}
+    #map {flex:1; min-height:400px; height:100%;}
+    .container {width:400px; padding:20px; box-sizing:border-box; background:#f9f9f9; overflow-y:auto;}
+    .form-group {margin-bottom:10px;}
+    label {display:block; margin-bottom:5px;}
+    input, select, button {width:100%; padding:8px; box-sizing:border-box;}
+    button {background:#007bff; color:#fff; border:none; cursor:pointer; margin-top:10px;}
+    button:hover {background:#0056b3;}
+    #results {margin-top:20px; padding:15px; background:#fff; border:1px solid #ccc; border-radius:5px;}
+    .result-item {margin:10px 0; padding:10px; background:#f0f8ff; border-left:4px solid #007bff;}
+    .error {background:#ffe6e6; border-left-color:#dc3545;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculador de Ahorro con Paneles Solares</h1>
+    <p><small>👈 Haz clic en el mapa para seleccionar tu ubicación</small></p>
+    <div id="locationInfo" style="padding:10px; background:#e3f2fd; border-radius:5px; margin-bottom:15px; display:none;">
+      <strong>📍 Ubicación seleccionada:</strong><br>
+      <span id="coordsDisplay">-</span>
+    </div>
+    <form id="inputForm">
+      <div class="form-group">
+        <label for="panelPower">Potencia instalada (Wp)</label>
+        <input type="number" id="panelPower" placeholder="Ej: 3000" step="10" value="3000">
+      </div>
+      <div class="form-group">
+        <label for="tilt">Inclinación de paneles (°)</label>
+        <input type="number" id="tilt" placeholder="Ej: 30" value="30">
+        <small>0° = Horizontal, 90° = Vertical</small>
+      </div>
+      <div class="form-group">
+        <label for="azimuth">Orientación azimut (°)</label>
+        <input type="number" id="azimuth" placeholder="Ej: 0" value="0">
+        <small>0° = Sur, -90° = Este, 90° = Oeste, 180° = Norte</small>
+      </div>
+      <div class="form-group">
+        <label for="systemLoss">Pérdidas del sistema (%)</label>
+        <input type="number" id="systemLoss" placeholder="Ej: 14" value="14">
+        <small>Incluye pérdidas por cables, inversor, suciedad, etc.</small>
+      </div>
+      <div class="form-group">
+        <label>Tipo de tarifa eléctrica</label>
+        <div>
+          <input type="radio" id="tariffPvpc" name="tariff" value="pvpc" checked>
+          <label for="tariffPvpc" style="display:inline;">PVPC (precio medio 0.15 €/kWh)</label>
+        </div>
+        <div>
+          <input type="radio" id="tariffFixed" name="tariff" value="fixed">
+          <label for="tariffFixed" style="display:inline;">Tarifa fija personalizada</label>
+        </div>
+      </div>
+      <div id="fixedTariffFields" style="display:none;">
+        <div class="form-group">
+          <label for="priceFixed">Precio promedio (€/kWh)</label>
+          <input type="number" id="priceFixed" step="0.01" placeholder="Ej: 0.18" value="0.18">
+        </div>
+      </div>
+      <button type="button" id="calcBtn">Calcular Ahorro</button>
+    </form>
+    <div id="results"></div>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""></script>
+  <script>
+    // Initialize map after DOM is ready
+    var map = L.map('map').setView([40.4168, -3.7038], 6); // Default: Madrid
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+    
+    // Fix map size issues
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 100);
+
+    // Variable to store selected location
+    var selectedLat = null;
+    var selectedLng = null;
+
+    // Geolocation on load
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        selectedLat = pos.coords.latitude;
+        selectedLng = pos.coords.longitude;
+        map.setView([selectedLat, selectedLng], 13);
+        L.marker([selectedLat, selectedLng]).addTo(map)
+          .bindPopup('Tu ubicación actual').openPopup();
+        
+        // Show coordinates
+        document.getElementById('locationInfo').style.display = 'block';
+        document.getElementById('coordsDisplay').textContent = 
+          selectedLat.toFixed(4) + '°N, ' + selectedLng.toFixed(4) + '°E';
+      }, function(err) {
+        console.warn('Geolocalización no disponible:', err);
+      });
+    }
+
+    // Map click to set location
+    map.on('click', function(e) {
+      selectedLat = e.latlng.lat;
+      selectedLng = e.latlng.lng;
+      
+      // Remove old markers
+      map.eachLayer(function(layer) {
+        if (layer instanceof L.Marker) {
+          layer.remove();
+        }
+      });
+      
+      // Add new marker with popup
+      L.marker([selectedLat, selectedLng]).addTo(map)
+        .bindPopup('Ubicación seleccionada<br>' + selectedLat.toFixed(4) + '°, ' + selectedLng.toFixed(4) + '°')
+        .openPopup();
+      
+      // Show coordinates
+      document.getElementById('locationInfo').style.display = 'block';
+      document.getElementById('coordsDisplay').textContent = 
+        selectedLat.toFixed(4) + '°N, ' + selectedLng.toFixed(4) + '°E';
+    });
+
+    // Show/hide fixed tariff fields
+    var tariffRadios = document.querySelectorAll('input[name="tariff"]');
+    tariffRadios.forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        var fixedFields = document.getElementById('fixedTariffFields');
+        if (radio.value === 'fixed') {
+          fixedFields.style.display = 'block';
+        } else {
+          fixedFields.style.display = 'none';
+        }
+      });
+    });
+
+    // Calculate button handler
+    document.getElementById('calcBtn').addEventListener('click', function() {
+      // Get inputs
+      var panelPowerWp = parseFloat(document.getElementById('panelPower').value) || 0;
+      var panelPower = panelPowerWp / 1000; // Convert Wp to kWp for API
+      var tilt = parseFloat(document.getElementById('tilt').value) || 0;
+      var azimuth = parseFloat(document.getElementById('azimuth').value) || 0;
+      var systemLoss = parseFloat(document.getElementById('systemLoss').value) || 14;
+      var tariffType = document.querySelector('input[name="tariff"]:checked').value;
+      var priceFixed = parseFloat(document.getElementById('priceFixed').value) || 0.18;
+
+      // Validate inputs
+      if (panelPower <= 0) {
+        alert('Por favor, introduce una potencia válida.');
+        return;
+      }
+
+      // Determine price per kWh
+      var pricePerKWh = 0;
+      if (tariffType === 'pvpc') {
+        pricePerKWh = 0.15; // Precio promedio PVPC
+      } else if (tariffType === 'fixed') {
+        pricePerKWh = priceFixed;
+      }
+
+      // Use selected location or fallback to default
+      var lat = selectedLat;
+      var lng = selectedLng;
+      if (lat === null || lng === null) {
+        alert('Por favor, permite la geolocalización o haz clic en el mapa para seleccionar una ubicación.');
+        return;
+      }
+
+      // Show loading
+      var resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<div class="result-item">⏳ Consultando datos de radiación solar de PVGIS...</div>';
+
+      // Call PVGIS API through local proxy to avoid CORS issues
+      // API documentation: https://joint-research-centre.ec.europa.eu/pvgis-online-tool/pvgis-data-download/api-pvgis_en
+      var url = '/api/pvgis?' +
+        'lat=' + lat +
+        '&lon=' + lng +
+        '&peakpower=' + panelPower +
+        '&loss=' + systemLoss +
+        '&angle=' + tilt +
+        '&aspect=' + azimuth;
+
+      console.log('Consultando PVGIS API a través del proxy:', url);
+
+      fetch(url)
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Error HTTP: ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          console.log('Respuesta completa de PVGIS:', JSON.stringify(data, null, 2));
+          
+          // Parse PVGIS response - verificar estructura
+          if (!data.outputs) {
+            throw new Error('La API no devolvió datos válidos. Estructura: ' + JSON.stringify(Object.keys(data)));
+          }
+
+          // PVGIS puede devolver los datos en diferentes formatos
+          var totals = null;
+          
+          // Intentar acceder a los totales
+          if (data.outputs.totals) {
+            if (data.outputs.totals.fixed) {
+              totals = data.outputs.totals.fixed;
+            } else if (data.outputs.totals) {
+              totals = data.outputs.totals;
+            }
+          }
+          
+          if (!totals) {
+            console.error('Estructura de outputs:', data.outputs);
+            throw new Error('No se encontraron datos de totales en la respuesta');
+          }
+
+          console.log('Totales extraídos:', totals);
+
+          // Extraer valores con validación
+          var annualProductionKWh = totals.E_y || totals['E_y'] || 0;
+          var avgDailyProduction = totals.E_d || totals['E_d'] || 0;
+          var avgMonthlyProduction = totals.E_m || totals['E_m'] || 0;
+          var solarIrradiance = totals.H_sun_f || totals['H(i)_y'] || totals.H_i_y || 0;
+          
+          if (annualProductionKWh === 0) {
+            throw new Error('La producción anual es 0. Revisa los parámetros o la ubicación');
+          }
+          
+          var annualSavings = annualProductionKWh * pricePerKWh;
+          var monthlySavings = annualSavings / 12;
+
+          // Display results
+          resultsDiv.innerHTML = 
+            '<h3>📊 Resultados del Análisis Solar</h3>' +
+            '<div class="result-item">' +
+            '<strong>📍 Ubicación:</strong> ' + lat.toFixed(4) + '°, ' + lng.toFixed(4) + '°' +
+            '</div>' +
+            '<div class="result-item">' +
+            '<strong>⚡ Potencia instalada:</strong> ' + panelPowerWp + ' Wp (' + panelPower.toFixed(2) + ' kWp)' +
+            '</div>' +
+            (solarIrradiance > 0 ? 
+              '<div class="result-item">' +
+              '<strong>☀️ Radiación solar anual:</strong> ' + solarIrradiance.toFixed(0) + ' kWh/m²' +
+              '</div>' : '') +
+            '<div class="result-item">' +
+            '<strong>🔋 Producción anual:</strong> ' + annualProductionKWh.toFixed(2) + ' kWh/año' +
+            '</div>' +
+            (avgDailyProduction > 0 || avgMonthlyProduction > 0 ?
+              '<div class="result-item">' +
+              '<strong>📅 Producción promedio:</strong><br>' +
+              (avgDailyProduction > 0 ? '• Diaria: ' + avgDailyProduction.toFixed(2) + ' kWh/día<br>' : '') +
+              (avgMonthlyProduction > 0 ? '• Mensual: ' + avgMonthlyProduction.toFixed(2) + ' kWh/mes' : '') +
+              '</div>' : '') +
+            '<div class="result-item" style="background:#e6ffe6; border-left-color:#28a745;">' +
+            '<strong>💰 Ahorro económico estimado:</strong><br>' +
+            '• Anual: <strong>' + annualSavings.toFixed(2) + ' €/año</strong><br>' +
+            '• Mensual: <strong>' + monthlySavings.toFixed(2) + ' €/mes</strong><br>' +
+            '<small>(Precio: ' + pricePerKWh.toFixed(3) + ' €/kWh)</small>' +
+            '</div>' +
+            '<div class="result-item">' +
+            '<small>📌 Datos proporcionados por PVGIS © European Communities, 2001-2024</small>' +
+            '</div>';
+        })
+        .catch(function(err) {
+          console.error('Error completo:', err);
+          resultsDiv.innerHTML = 
+            '<div class="result-item error">' +
+            '<strong>❌ Error al calcular:</strong><br>' +
+            err.message + '<br><br>' +
+            '<small>Consejos:</small><br>' +
+            '<small>• Verifica tu conexión a internet</small><br>' +
+            '<small>• Asegúrate de haber seleccionado una ubicación válida en el mapa</small><br>' +
+            '<small>• Revisa la consola del navegador (F12) para más detalles</small>' +
+            '</div>';
+        });
+    });
+  </script>
+</body>
+</html>
