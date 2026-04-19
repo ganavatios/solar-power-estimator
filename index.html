@@ -273,7 +273,19 @@
         .then(response => response.json())
         .then(data => {
           document.getElementById('versionNumber').textContent = data.version;
-          document.getElementById('deployDate').textContent = data.date;
+          
+          // Format date and time
+          if (data.datetime) {
+            const deployDate = new Date(data.datetime);
+            const dateStr = deployDate.toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
+            const timeStr = deployDate.toLocaleTimeString(currentLang === 'es' ? 'es-ES' : 'en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            document.getElementById('deployDate').textContent = dateStr + ' ' + timeStr;
+          } else if (data.date) {
+            document.getElementById('deployDate').textContent = data.date;
+          }
         })
         .catch(err => {
           console.error('Error loading version:', err);
