@@ -1,21 +1,65 @@
 # Configuración de DNS para GanaVatios
 
-## ✅ CONFIGURACIÓN COMPLETADA
+## ✅ MIGRACIÓN COMPLETADA
 
-- **www.ganavatios.com** → GitHub Pages (archivos estáticos HTML/CSS/JS)
-- **api.ganavatios.com** → Vercel (serverless functions)
-- **Estado**: ✅ Funcionando correctamente
+**Estado actual:**
+- **www.ganavatios.com** → Vercel (frontend + serverless functions)
+- **Arquitectura**: Todo en Vercel (sin GitHub Pages)
+- **APIs**: URLs relativas `/api/*` (mismo dominio, sin CORS)
 
-## Solución Implementada
+## Configuración Final
 
-El código usa:
-- **Local**: `http://localhost:8000/api/*` (servidor Python)
-- **Producción**: `https://api.ganavatios.com/api/*` (Vercel)
+### DNS Configurado
+```
+Tipo:  CNAME
+Name:  www
+Value: cname.vercel-dns.com
+TTL:   Auto
+```
 
-**Arquitectura:**
-- Frontend: GitHub Pages sirve archivos estáticos desde `www.ganavatios.com`
-- Backend: Vercel sirve APIs desde `api.ganavatios.com`
-- CORS: Configurado correctamente en `vercel.json`
+### Vercel
+- **Proyecto**: solar-power-estimator
+- **Dominio de producción**: www.ganavatios.com
+- **Deploy automático**: Desde rama `main` de GitHub
+
+## Arquitectura Final
+
+```
+Usuario
+  ↓
+www.ganavatios.com (Vercel CDN)
+  ↓
+├── Frontend (HTML/CSS/JS)
+└── Serverless Functions
+    ├── /api/pvgis
+    └── /api/pvpc-prices
+```
+
+**Ventajas:**
+- ✅ Sin problemas de CORS (todo mismo dominio)
+- ✅ Deploy automático desde GitHub
+- ✅ HTTPS automático
+- ✅ CDN global
+- ✅ Serverless functions integradas
+- ✅ Una sola plataforma para gestionar
+
+## URLs del Proyecto
+
+- **Producción**: https://www.ganavatios.com
+- **Vercel Dashboard**: https://vercel.com/dashboard
+- **GitHub Repo**: https://github.com/ganavatios/solar-power-estimator
+
+## Changelog de Migración
+
+**Antes (GitHub Pages + Vercel API):**
+- Frontend: GitHub Pages
+- APIs: Vercel con dominio separado
+- Problema: CORS errors
+
+**Ahora (Solo Vercel):**
+- Todo: Vercel
+- URLs relativas para APIs
+- Sin problemas de CORS
 
 ## Configuración Necesaria en DNS
 

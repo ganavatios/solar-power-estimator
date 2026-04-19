@@ -2,21 +2,17 @@
 
 Aplicación web para calcular el ahorro económico de una instalación de paneles solares fotovoltaicos utilizando datos reales de radiación solar de PVGIS.
 
-## ⚠️ IMPORTANTE: Despliegue en Producción
+## 🚀 Despliegue en Producción
 
-**Para que la aplicación funcione en GitHub Pages, debes desplegar la función serverless en Vercel.**
+**La aplicación está completamente desplegada en Vercel.**
 
 📖 **Guía completa:** [DEPLOYMENT.md](DEPLOYMENT.md)
 
-**TL;DR:**
-1. Crear cuenta en [Vercel](https://vercel.com)
-2. Importar repositorio `ganavatios/solar-power-estimator`
-3. Deploy automático
-4. Copiar URL de Vercel
-5. Actualizar URL en `index.html` línea ~591
-6. Commit y push
-
-Sin Vercel desplegado, GitHub Pages mostrará errores al calcular.
+**Arquitectura:**
+- **Frontend**: HTML, CSS, JS servidos desde Vercel
+- **Backend**: Serverless Functions (APIs) en Vercel
+- **Dominio**: www.ganavatios.com apuntando a Vercel
+- **Deploy automático**: Cada push a `main` redespliega automáticamente
 
 ## 🌟 Características
 
@@ -41,14 +37,19 @@ Sin Vercel desplegado, GitHub Pages mostrará errores al calcular.
 
 ## 🚀 Inicio Rápido
 
-### GitHub Pages (Producción)
+### Producción (Vercel)
 
 **URLs disponibles:**
 - **Auto-redirección**: https://www.ganavatios.com/ → Detecta idioma del navegador
 - **Español**: https://www.ganavatios.com/es/
 - **Inglés**: https://www.ganavatios.com/en/
 
-> **Nota**: En producción, la aplicación usa una función serverless en Vercel como proxy para PVGIS API.
+**Características:**
+- ✅ Deploy automático desde GitHub
+- ✅ HTTPS automático con certificado SSL
+- ✅ CDN global para máximo rendimiento
+- ✅ Serverless Functions para APIs
+- ✅ Sin problemas de CORS (todo en mismo dominio)
 
 ### Desarrollo Local
 
@@ -344,37 +345,62 @@ PVGIS API (re.jrc.ec.europa.eu)
   - Fetch API
   - ES6+ JavaScript
 
-## 🌐 Despliegue en GitHub Pages + Vercel
+## 🌐 Despliegue en Vercel
 
-El proyecto utiliza una arquitectura híbrida:
+El proyecto está completamente desplegado en Vercel:
 
-### GitHub Pages (Frontend)
-- Sirve los archivos estáticos (HTML, CSS, JS, imágenes)
-- Se despliega automáticamente desde la rama `main`
-- URL: `https://ganavatios.github.io/solar-power-estimator/`
+### Arquitectura
 
-### Vercel (API Proxy)
-- Función serverless que actúa como proxy para PVGIS API
-- Soluciona problemas de CORS que impiden llamadas directas a PVGIS
-- Código en: `api/pvgis.js`
+**Frontend (Archivos Estáticos)**
+- HTML, CSS, JavaScript
+- Imágenes y favicons
+- Archivos de traducción (JSON)
+- Servidos desde Vercel CDN
 
-**Configuración de Vercel:**
+**Backend (Serverless Functions)**
+- `/api/pvgis.js` - Proxy para PVGIS API (datos de radiación solar)
+- `/api/pvpc-prices.js` - Precios de electricidad PVPC (España)
+- CORS configurado en `vercel.json`
 
-1. Ve a [vercel.com](https://vercel.com) y conecta tu cuenta de GitHub
-2. Importa el repositorio `ganavatios/solar-power-estimator`
-3. Vercel detectará automáticamente la configuración (`vercel.json`)
-4. Haz clic en "Deploy"
-5. Copia la URL de producción (ej: `https://solar-power-estimator.vercel.app`)
-6. Actualiza la URL en `index.html` (busca `solar-power-estimator.vercel.app` y reemplaza con tu URL)
+### Configuración
 
-**Versionado Automático:**
-- Cuando se hace push a `main`, GitHub Actions incrementa la versión
-- Vercel se redespliega automáticamente en cada push
-- La versión y fecha se actualizan en `version.json`
+**1. Conectar con GitHub:**
+```
+https://vercel.com/new
+→ Import Git Repository
+→ Seleccionar ganavatios/solar-power-estimator
+→ Deploy
+```
 
-No se requiere configuración adicional. El código detecta automáticamente si está en:
-- **Local** (`localhost`): Usa `scripts/server.py` 
-- **Producción**: Usa Vercel serverless function
+**2. Configurar Dominio Personalizado:**
+```
+Vercel Dashboard → Settings → Domains
+→ Add Domain: www.ganavatios.com
+→ Configurar CNAME en DNS: www → cname.vercel-dns.com
+```
+
+**3. Deploy Automático:**
+- Cada push a `main` → Vercel redespliega automáticamente
+- GitHub Actions incrementa versión en `version.json`
+- Build time: ~30 segundos
+- Propagación global: ~1 minuto
+
+### Detección de Entorno
+
+El código detecta automáticamente el entorno:
+- **Local** (`localhost`): Usa `scripts/server.py` como proxy
+- **Producción** (Vercel): Usa URLs relativas `/api/*`
+
+### Ventajas de Vercel
+
+- ✅ Deploy automático desde GitHub
+- ✅ HTTPS y SSL automáticos
+- ✅ CDN global (edge network)
+- ✅ Serverless Functions integradas
+- ✅ Sin problemas de CORS
+- ✅ Preview deployments para PRs
+- ✅ Rollback instantáneo
+- ✅ Analytics integrado
 
 ## 📄 Licencia
 
