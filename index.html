@@ -10,8 +10,8 @@
     crossorigin="">
   <style>
     body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:row; height:100vh; background:#fafafa;}
-    #map {flex:1; min-height:400px; height:100%;}
-    .container {width:400px; padding:20px; box-sizing:border-box; background:#ffffff; overflow-y:auto;}
+    #map {flex:1; min-height:400px; height:100%; order:2;}
+    .container {flex:1; padding:20px; box-sizing:border-box; background:#ffffff; overflow-y:auto; order:1;}
     .form-group {margin-bottom:10px;}
     label {display:block; margin-bottom:5px;}
     input, select, button {width:100%; padding:8px; box-sizing:border-box;}
@@ -46,6 +46,7 @@
     
     /* Language selector */
     .lang-selector {display:flex; gap:8px; align-items:center;}
+    .lang-selector-mobile {display:none;} /* Oculto por defecto en desktop */
     .lang-flag {cursor:pointer; opacity:0.5; transition:opacity 0.2s; width:32px; height:32px; border-radius:4px; border:2px solid transparent;}
     .lang-flag:hover {opacity:0.8;}
     .lang-flag.active {opacity:1; border-color:#43A047;}
@@ -77,10 +78,56 @@
     .progress-text {text-align:center; margin-top:10px; font-size:14px; color:#666;}
     .progress-spinner {display:inline-block; width:16px; height:16px; border:2px solid #43A047; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px;}
     @keyframes spin {to {transform:rotate(360deg);}}
+    
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      body {flex-direction:column; height:auto;}
+      .container {display:flex; flex-direction:column; order:1; width:100%; height:auto;}
+      #map {order:2; height:400px; min-height:400px; width:100%;}
+      
+      /* Mostrar selector móvil y ocultar el del header */
+      .lang-selector-mobile {display:flex; order:1; justify-content:center; margin-bottom:15px;}
+      .header-container .lang-selector {display:none;}
+      
+      /* Reorganizar elementos dentro del container */
+      .logo-header {order:2; margin-bottom:15px;}
+      .logo-header img {max-width:220px;}
+      .header-container {order:3; flex-direction:column; text-align:center; margin-bottom:15px;}
+      .header-container h1 {font-size:1.3em; margin-bottom:10px;}
+      
+      /* El resto del formulario sigue en orden natural después */
+      #getLocationBtn {order:4;}
+      #mapInstruction {order:5;}
+      #locationInfo {order:6;}
+      #inputForm {order:7;}
+      .progress-container {order:8;}
+      #results {order:9;}
+      .footer {order:10;}
+      
+      /* Ajustes de tamaño para móvil */
+      .compass {width:100px; height:100px;}
+      .compass-needle {height:38px;}
+      .tilt-visualizer {width:120px; height:90px;}
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="lang-selector lang-selector-mobile">
+      <svg class="lang-flag" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+        <rect width="900" height="600" fill="#c60b1e"/>
+        <rect width="900" height="300" y="150" fill="#ffc400"/>
+      </svg>
+      <svg class="lang-flag" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+        <clipPath id="s2"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+        <clipPath id="t2"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
+        <g clip-path="url(#s2)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t2)" stroke="#C8102E" stroke-width="4"/>
+        <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+        <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
+      </svg>
+    </div>
     <div class="logo-header">
       <img src="logo.png" alt="GanaVatios - Ahorro Inteligente">
     </div>
