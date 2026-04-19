@@ -17,7 +17,7 @@
   "tariffType": "Tipo de tarifa eléctrica",
   "tariffPvpc": "PVPC (precio real por franjas horarias)",
   "tariffPvpcNote": "Calcula con precios reales del mercado eléctrico",
-  "helpTariffPvpc": "Para España, se consultarán los precios reales del mercado eléctrico",
+  "helpTariffPvpc": "Para España, se usan precios PVPC promedio trimestrales (REE)",
   "tariffFixed": "Tarifa fija personalizada",
   "priceFixed": "Precio promedio (€/kWh)",
   "priceFixedPlaceholder": "Ej: 0.18",
@@ -78,6 +78,6 @@
   "fetchingPrices": "Obteniendo precios de electricidad...",
   "calculatingWithRealPrices": "Calculando ahorro con precios reales...",
   "pvpcAveragePrice": "Precio medio PVPC:",
-  "pvpcDataSource": "Precios obtenidos de",
+  "pvpcDataSource": "promedio trimestral REE",
   "errorFetchingPrices": "No se pudieron obtener precios PVPC. Usando precio estimado."
 }

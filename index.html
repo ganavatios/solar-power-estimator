@@ -756,8 +756,9 @@
             '• ' + (translations.resultAnnualLabel || 'Anual:') + ' <strong>' + annualSavings.toFixed(2) + ' €/' + (translations.year || 'año') + '</strong><br>' +
             '• ' + (translations.resultMonthlyLabel || 'Mensual:') + ' <strong>' + monthlySavings.toFixed(2) + ' €/' + (translations.month || 'mes') + '</strong><br>' +
             '<small>(' + (translations.resultPriceLabel || 'Precio:') + ' ' + pricePerKWh.toFixed(3) + ' €/kWh' +
-            (priceSource === 'preciodelaluz.org' ? ' - ' + (translations.pvpcDataSource || 'Precios obtenidos de') + ' preciodelaluz.org' : '') +
+            (priceSource === 'historical-average' ? ' - PVPC ' + (translations.pvpcDataSource || 'promedio trimestral') : '') +
             (priceSource === 'fallback' ? ' - ' + (translations.errorFetchingPrices || 'estimado') : '') +
+            (priceSource === 'fixed' ? '' : '') +
             ')</small>' +
             '</div>' +
             '<div class="result-item" style="background:#fff9e6; border-left-color:#ffc107;">' +

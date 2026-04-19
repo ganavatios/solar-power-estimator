@@ -17,7 +17,7 @@
   "tariffType": "Electricity tariff type",
   "tariffPvpc": "Variable rate (real hourly prices)",
   "tariffPvpcNote": "Calculates with real electricity market prices",
-  "helpTariffPvpc": "For Spain, real electricity market prices will be fetched",
+  "helpTariffPvpc": "For Spain, quarterly average PVPC prices are used (REE)",
   "tariffFixed": "Custom fixed rate",
   "priceFixed": "Average price (€/kWh)",
   "priceFixedPlaceholder": "E.g.: 0.18",
@@ -78,6 +78,6 @@
   "fetchingPrices": "Fetching electricity prices...",
   "calculatingWithRealPrices": "Calculating savings with real prices...",
   "pvpcAveragePrice": "Average price:",
-  "pvpcDataSource": "Prices obtained from",
+  "pvpcDataSource": "quarterly average REE",
   "errorFetchingPrices": "Could not fetch prices. Using estimated price."
 }
