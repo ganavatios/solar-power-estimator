@@ -513,13 +513,9 @@
       var resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '<div class="result-item">' + (translations.calculating || '⏳ Consultando datos de radiación solar de PVGIS...') + '</div>';
 
-      // Call PVGIS API - use proxy in local development, direct call in production
+      // Call PVGIS API - use proxy in local development, CORS proxy in production
       // API documentation: https://joint-research-centre.ec.europa.eu/pvgis-online-tool/pvgis-data-download/api-pvgis_en
-      var baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? '/api/pvgis?'
-        : 'https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?';
-      
-      var url = baseUrl +
+      var pvgisApiUrl = 'https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?' +
         'lat=' + lat +
         '&lon=' + lng +
         '&peakpower=' + panelPower +
@@ -527,8 +523,24 @@
         '&angle=' + tilt +
         '&aspect=' + azimuth +
         '&outputformat=json';
+      
+      var url;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Local development: use local proxy
+        url = '/api/pvgis?' +
+          'lat=' + lat +
+          '&lon=' + lng +
+          '&peakpower=' + panelPower +
+          '&loss=' + systemLoss +
+          '&angle=' + tilt +
+          '&aspect=' + azimuth;
+      } else {
+        // Production (GitHub Pages): use CORS proxy
+        url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(pvgisApiUrl);
+      }
 
-      console.log('Consultando PVGIS API:', url);
+      console.log('Consultando PVGIS API:', pvgisApiUrl);
+      console.log('URL final:', url);
 
       fetch(url)
         .then(function(response) {

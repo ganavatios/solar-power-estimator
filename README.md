@@ -154,11 +154,13 @@ Para añadir un nuevo idioma:
 - Requiere ejecutar `server.py` para el proxy PVGIS
 - Usa rutas absolutas con proxy local (`/api/pvgis`)
 - La detección automática identifica `localhost` o `127.0.0.1`
+- Sin limitaciones de CORS
 
 **GitHub Pages (Producción):**
-- Llama directamente a PVGIS API (`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc`)
-- PVGIS permite solicitudes CORS desde navegadores
-- No requiere servidor proxy
+- Usa proxy CORS público (AllOrigins) para acceder a PVGIS API
+- URL: `https://api.allorigins.win/raw?url={pvgis_url}`
+- PVGIS no permite CORS directo, por lo que se requiere proxy
+- No requiere servidor backend propio
 - Rutas relativas para recursos estáticos
 
 ### Requisitos
