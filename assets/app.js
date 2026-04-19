@@ -418,11 +418,11 @@
         progressBar.style.width = '15%';
         progressMessage.textContent = translations.fetchingPrices || 'Obteniendo precios de electricidad...';
         
+        // Always use relative URL - works in both local (Python server) and production (Vercel)
+        var pricesUrl = '/api/pvpc-prices?country=ES';
         var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        var pricesUrl = isLocal 
-          ? '/api/pvpc-prices?country=ES'
-          : 'https://solar-power-estimator-rho.vercel.app/api/pvpc-prices?country=ES';
         
+        console.log(isLocal ? 'Modo LOCAL: obteniendo precios PVPC' : 'Modo PRODUCCIÓN: obteniendo precios PVPC');
         console.log('Fetching PVPC prices from:', pricesUrl);
         
         fetch(pricesUrl)
@@ -472,17 +472,11 @@
         '&angle=' + tilt +
         '&aspect=' + azimuth;
       
-      var url;
+      // Always use relative URL - works in both local (Python server) and production (Vercel)
+      var url = '/api/pvgis?' + apiParams;
       var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       
-      if (isLocal) {
-        url = '/api/pvgis?' + apiParams;
-        console.log('Modo LOCAL: usando proxy Python local');
-      } else {
-        url = 'https://solar-power-estimator-rho.vercel.app/api/pvgis?' + apiParams;
-        console.log('Modo PRODUCCIÓN: usando Vercel serverless function');
-      }
-
+      console.log(isLocal ? 'Modo LOCAL: usando proxy Python' : 'Modo PRODUCCIÓN: usando Vercel serverless');
       console.log('URL de la petición:', url);
 
       fetch(url)
@@ -620,9 +614,9 @@
         } else if (!isLocal && (errorMessage.includes('JSON') || errorMessage.includes('HTTP'))) {
           tips =
             '<small>⚠️ <strong>Error en producción:</strong></small><br>' +
-            '<small>• El proxy de Vercel no está desplegado o configurado correctamente</small><br>' +
-            '<small>• Sigue las instrucciones en <code>api/README.md</code> para desplegar en Vercel</small><br>' +
-            '<small>• URL actual: <code>https://solar-power-estimator.vercel.app/api/pvgis</code></small>';
+            '<small>• Verifica que las funciones serverless estén desplegadas en Vercel</small><br>' +
+            '<small>• Comprueba los logs en el Dashboard de Vercel</small><br>' +
+            '<small>• Las APIs deben estar en la carpeta <code>/api/</code> del proyecto</small>';
         } else {
           tips =
             '<small>💡 <strong>Consejos:</strong></small><br>' +
