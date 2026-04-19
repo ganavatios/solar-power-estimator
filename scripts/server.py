@@ -2,6 +2,7 @@
 """
 Servidor proxy para la API de PVGIS
 Soluciona problemas de CORS al hacer peticiones desde el navegador
+Solo necesario para desarrollo local
 """
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -9,6 +10,7 @@ from urllib.parse import urlparse, parse_qs, urlencode
 import urllib.request
 import json
 import sys
+import os
 
 class ProxyHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -71,23 +73,33 @@ class ProxyHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
 def run_server(port=8000):
+    # Change to parent directory to serve files from root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    os.chdir(project_root)
+    
     server_address = ('', port)
     httpd = HTTPServer(server_address, ProxyHandler)
-    print("=" * 50)
-    print("  Servidor Web - Calculador Solar")
-    print("=" * 50)
-    print(f"\nServidor corriendo en: http://localhost:{port}")
-    print(f"Abre tu navegador en: http://localhost:{port}/index.html")
-    print("\nPresiona Ctrl+C para detener el servidor\n")
+    print("=" * 60)
+    print("  🌞 Servidor Web - Calculador de Ahorro Solar")
+    print("=" * 60)
+    print(f"\n✅ Servidor corriendo en: http://localhost:{port}")
+    print(f"✅ Abre tu navegador en: http://localhost:{port}/index.html")
+    print("\n📝 Nota: Este servidor incluye un proxy para PVGIS API")
+    print("   (necesario para evitar problemas de CORS en desarrollo local)")
+    print("\n❌ Presiona Ctrl+C para detener el servidor\n")
     
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\n\nServidor detenido.")
+        print("\n\n🛑 Servidor detenido.")
         sys.exit(0)
 
 if __name__ == '__main__':
     port = 8000
     if len(sys.argv) > 1:
-        port = int(sys.argv[1])
+        try:
+            port = int(sys.argv[1])
+        except ValueError:
+            print(f"Error: Puerto inválido '{sys.argv[1]}'. Usando puerto por defecto 8000.")
     run_server(port)

@@ -6,5 +6,5 @@ echo.
 echo Iniciando servidor en http://localhost:8000
 echo Presiona Ctrl+C para detener el servidor
 echo.
-cd /d "%~dp0.."
+cd /d "%~dp0"
 python server.py 8000

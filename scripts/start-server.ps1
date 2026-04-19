@@ -7,9 +7,9 @@ Write-Host "Iniciando servidor en http://localhost:8000" -ForegroundColor Cyan
 Write-Host "Presiona Ctrl+C para detener el servidor" -ForegroundColor Yellow
 Write-Host ""
 
-# Cambiar al directorio del proyecto
+# Cambiar al directorio de scripts
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location (Join-Path $scriptPath "..")
+Set-Location $scriptPath
 
 # Abrir el navegador después de 2 segundos
 Start-Job -ScriptBlock {
@@ -17,5 +17,5 @@ Start-Job -ScriptBlock {
     Start-Process "http://localhost:8000/index.html"
 } | Out-Null
 
-# Iniciar el servidor
+# Iniciar el servidor desde scripts/
 python server.py 8000

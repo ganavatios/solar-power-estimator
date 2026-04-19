@@ -19,11 +19,11 @@ Aplicación web para calcular el ahorro económico de una instalación de panele
 
 La aplicación está desplegada en: **https://ganavatios.github.io/solar-power-estimator/**
 
-> **Nota**: En producción, la aplicación llama directamente a la API de PVGIS sin proxy. PVGIS permite CORS para solicitudes desde navegadores.
+> **Nota**: En producción, la aplicación usa una función serverless en Vercel como proxy para PVGIS API.
 
 ### Desarrollo Local
 
-Para desarrollo local, usa el servidor proxy para evitar posibles problemas de CORS:
+Para desarrollo local, usa el servidor Python incluido que actúa como proxy para PVGIS:
 
 #### Opción 1: Script automatizado (Recomendado)
 
@@ -34,22 +34,29 @@ Para desarrollo local, usa el servidor proxy para evitar posibles problemas de C
 
 **Windows (Command Prompt):**
 ```cmd
-scripts\start-server.bat
+.\scripts\start-server.bat
 ```
 
-El servidor se iniciará en http://localhost:8000 y se abrirá automáticamente en el navegador.
+**Linux/macOS:**
+```bash
+cd scripts
+python3 server.py 8000
+```
 
-### Opción 2: Manual
+El servidor se iniciará en http://localhost:8000 y (en PowerShell) se abrirá automáticamente en el navegador.
+
+#### Opción 2: Manual
 
 ```bash
-# Iniciar servidor con proxy PVGIS
+# Desde la carpeta scripts
+cd scripts
 python server.py 8000
 
-# Abrir en el navegador
-# http://localhost:8000/index.html
+# El servidor cambiará automáticamente al directorio raíz del proyecto
+# Abre tu navegador en: http://localhost:8000/index.html
 ```
 
-> **Nota**: Es necesario usar el servidor `server.py` en lugar del servidor HTTP simple de Python, ya que incluye un proxy para evitar problemas de CORS con la API de PVGIS.
+> **Nota**: Es necesario usar `scripts/server.py` en lugar del servidor HTTP simple de Python, ya que incluye un proxy para evitar problemas de CORS con la API de PVGIS.
 
 ## 📖 Uso
 
@@ -112,15 +119,20 @@ La versión actual y fecha de despliegue se muestran en el footer de la aplicaci
 ```
 solar-power-estimator/
 ├── index.html              # Aplicación principal
-├── server.py              # Servidor con proxy PVGIS
 ├── version.json           # Información de versión y fecha
+├── vercel.json            # Configuración de Vercel
 ├── .github/
 │   └── workflows/
 │       └── version-bump.yml  # GitHub Actions para versionado
+├── api/
+│   ├── pvgis.js          # Vercel Serverless Function (proxy PVGIS)
+│   └── README.md         # Documentación del proxy
 ├── lang/                  # Archivos de traducción
 │   ├── es.json           # Español
-│   └── en.json           # English
-├── scripts/              # Scripts de inicio
+│   ├── en.json           # English
+│   └── README.md
+├── scripts/              # Scripts de inicio y utilidades
+│   ├── server.py         # Servidor Python con proxy PVGIS (desarrollo local)
 │   ├── start-server.bat  # Windows CMD
 │   ├── start-server.ps1  # Windows PowerShell
 │   └── README.md
@@ -151,17 +163,31 @@ Para añadir un nuevo idioma:
 ### Desarrollo vs Producción
 
 **Desarrollo Local:**
-- Requiere ejecutar `server.py` para el proxy PVGIS
-- Usa rutas absolutas con proxy local (`/api/pvgis`)
+- Requiere ejecutar `scripts/server.py` para el proxy PVGIS
+- Servidor Python incluye proxy integrado en `/api/pvgis`
 - La detección automática identifica `localhost` o `127.0.0.1`
 - Sin limitaciones de CORS
+- No requiere cuenta de Vercel
 
-**GitHub Pages (Producción):**
-- Usa proxy CORS público (AllOrigins) para acceder a PVGIS API
-- URL: `https://api.allorigins.win/raw?url={pvgis_url}`
-- PVGIS no permite CORS directo, por lo que se requiere proxy
-- No requiere servidor backend propio
+**GitHub Pages + Vercel (Producción):**
+- **Frontend**: GitHub Pages sirve archivos estáticos
+- **API Proxy**: Vercel Serverless Function (`api/pvgis.js`)
+- URL del proxy: `https://[tu-proyecto].vercel.app/api/pvgis`
+- PVGIS no permite CORS directo, por eso usamos Vercel como proxy
 - Rutas relativas para recursos estáticos
+- Plan gratuito de Vercel suficiente para uso normal
+
+### Arquitectura de Producción
+
+```
+Usuario (Navegador)
+    ↓
+GitHub Pages (index.html, CSS, JS)
+    ↓
+Vercel Serverless Function (/api/pvgis)
+    ↓
+PVGIS API (re.jrc.ec.europa.eu)
+```
 
 ### Requisitos
 
@@ -172,16 +198,37 @@ Para añadir un nuevo idioma:
   - Fetch API
   - ES6+ JavaScript
 
-## 🌐 Despliegue en GitHub Pages
+## 🌐 Despliegue en GitHub Pages + Vercel
 
-El proyecto se despliega automáticamente en GitHub Pages cuando se hace push a la rama `main`:
+El proyecto utiliza una arquitectura híbrida:
 
-1. Los cambios se pushean a `main`
-2. GitHub Actions ejecuta el workflow de versionado (incrementa versión)
-3. GitHub Pages sirve automáticamente los archivos estáticos
-4. La aplicación está disponible en: `https://ganavatios.github.io/solar-power-estimator/`
+### GitHub Pages (Frontend)
+- Sirve los archivos estáticos (HTML, CSS, JS, imágenes)
+- Se despliega automáticamente desde la rama `main`
+- URL: `https://ganavatios.github.io/solar-power-estimator/`
 
-No se requiere configuración adicional. El código detecta automáticamente si está en producción o desarrollo local.
+### Vercel (API Proxy)
+- Función serverless que actúa como proxy para PVGIS API
+- Soluciona problemas de CORS que impiden llamadas directas a PVGIS
+- Código en: `api/pvgis.js`
+
+**Configuración de Vercel:**
+
+1. Ve a [vercel.com](https://vercel.com) y conecta tu cuenta de GitHub
+2. Importa el repositorio `ganavatios/solar-power-estimator`
+3. Vercel detectará automáticamente la configuración (`vercel.json`)
+4. Haz clic en "Deploy"
+5. Copia la URL de producción (ej: `https://solar-power-estimator.vercel.app`)
+6. Actualiza la URL en `index.html` (busca `solar-power-estimator.vercel.app` y reemplaza con tu URL)
+
+**Versionado Automático:**
+- Cuando se hace push a `main`, GitHub Actions incrementa la versión
+- Vercel se redespliega automáticamente en cada push
+- La versión y fecha se actualizan en `version.json`
+
+No se requiere configuración adicional. El código detecta automáticamente si está en:
+- **Local** (`localhost`): Usa `scripts/server.py` 
+- **Producción**: Usa Vercel serverless function
 
 ## 📄 Licencia
 
