@@ -418,13 +418,13 @@
         progressBar.style.width = '15%';
         progressMessage.textContent = translations.fetchingPrices || 'Obteniendo precios de electricidad...';
         
-        // Use custom API subdomain in production, relative path in local
+        // Use Vercel deployment URL directly
         var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         var pricesUrl = isLocal 
           ? '/api/pvpc-prices?country=ES'
-          : 'https://api.ganavatios.com/api/pvpc-prices?country=ES';
+          : 'https://solar-power-estimator-cp7re64ii-ganavatios-projects.vercel.app/api/pvpc-prices?country=ES';
         
-        console.log(isLocal ? 'Modo LOCAL: obteniendo precios PVPC' : 'Modo PRODUCCIÓN: obteniendo precios PVPC');
+        console.log(isLocal ? 'Modo LOCAL: obteniendo precios PVPC' : 'Modo PRODUCCIÓN: obteniendo precios PVPC (Vercel)');
         console.log('Fetching PVPC prices from:', pricesUrl);
         
         fetch(pricesUrl)
@@ -474,13 +474,13 @@
         '&angle=' + tilt +
         '&aspect=' + azimuth;
       
-      // Use custom API subdomain in production, relative path in local
+      // Use Vercel deployment URL directly
       var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       var url = isLocal 
         ? '/api/pvgis?' + apiParams
-        : 'https://api.ganavatios.com/api/pvgis?' + apiParams;
+        : 'https://solar-power-estimator-cp7re64ii-ganavatios-projects.vercel.app/api/pvgis?' + apiParams;
       
-      console.log(isLocal ? 'Modo LOCAL: usando proxy Python' : 'Modo PRODUCCIÓN: usando API Vercel');
+      console.log(isLocal ? 'Modo LOCAL: usando proxy Python' : 'Modo PRODUCCIÓN: usando Vercel');
       console.log('URL de la petición:', url);
 
       fetch(url)
