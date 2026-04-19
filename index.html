@@ -151,7 +151,7 @@
       resultsDiv.innerHTML = 'Calculando...';
 
       // Call PVGIS API
-      var apiKey = 'YOUR_PVGIS_API_KEY'; // Replace with your key
+      var apiKey = 'demo'; // Test key for demonstration
       var date = new Date().getFullYear(); // Use current year
       var url = 'https://re.jrc.ec.europa.eu/api/v5_2/production/ac?lat=' + lat + '&lon=' + lng + '&date=' + date + '&apikey=' + apiKey + '&format=json&tilt=' + tilt + '&azimuth=' + azimuth + '&system_loss=14&module_type=PV250';
 
@@ -173,7 +173,7 @@
         })
         .catch(function(err) {
           resultsDiv.innerHTML = 'Error al calcular la producción. Revisa la consola para detalles.';
-          console.error(err);
+          console.error('Fetch error:', err);
         });
     });
   </script>
