@@ -570,9 +570,11 @@
         console.log('Modo LOCAL: usando proxy Python local');
       } else {
         // Production: use our Vercel serverless function
-        // TODO: Replace this URL with your deployed Vercel function URL
+        // IMPORTANT: You must deploy to Vercel first and update this URL
+        // See api/README.md for deployment instructions
         url = 'https://solar-power-estimator.vercel.app/api/pvgis?' + apiParams;
         console.log('Modo PRODUCCIÓN: usando Vercel serverless function');
+        console.log('⚠️ Si ves errores, verifica que Vercel esté desplegado. Ver api/README.md');
       }
 
       console.log('URL de la petición:', url);
@@ -717,6 +719,14 @@
               '<small>1. <strong>PowerShell:</strong> <code>.\\scripts\\start-server.ps1</code></small><br>' +
               '<small>2. <strong>CMD:</strong> <code>.\\scripts\\start-server.bat</code></small><br>' +
               '<small>3. <strong>Manual:</strong> <code>cd scripts && python server.py</code></small>';
+          } else if (!isLocal && (errorMessage.includes('JSON') || errorMessage.includes('HTTP'))) {
+            // Production error - likely Vercel not deployed
+            tips =
+              '<small>⚠️ <strong>Error en producción (GitHub Pages):</strong></small><br>' +
+              '<small>• El proxy de Vercel no está desplegado o configurado correctamente</small><br>' +
+              '<small>• Sigue las instrucciones en <code>api/README.md</code> para desplegar en Vercel</small><br>' +
+              '<small>• Después de desplegar, actualiza la URL en <code>index.html</code> línea ~591</small><br>' +
+              '<small>• URL actual: <code>https://solar-power-estimator.vercel.app/api/pvgis</code></small>';
           } else {
             tips =
               '<small>💡 <strong>Consejos:</strong></small><br>' +

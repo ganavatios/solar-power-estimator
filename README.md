@@ -2,6 +2,22 @@
 
 Aplicación web para calcular el ahorro económico de una instalación de paneles solares fotovoltaicos utilizando datos reales de radiación solar de PVGIS.
 
+## ⚠️ IMPORTANTE: Despliegue en Producción
+
+**Para que la aplicación funcione en GitHub Pages, debes desplegar la función serverless en Vercel.**
+
+📖 **Guía completa:** [DEPLOYMENT.md](DEPLOYMENT.md)
+
+**TL;DR:**
+1. Crear cuenta en [Vercel](https://vercel.com)
+2. Importar repositorio `ganavatios/solar-power-estimator`
+3. Deploy automático
+4. Copiar URL de Vercel
+5. Actualizar URL en `index.html` línea ~591
+6. Commit y push
+
+Sin Vercel desplegado, GitHub Pages mostrará errores al calcular.
+
 ## 🌟 Características
 
 - 🗺️ Mapa interactivo para seleccionar ubicación
