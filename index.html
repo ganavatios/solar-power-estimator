@@ -60,6 +60,17 @@
     .location-btn {background:#28a745; color:#fff; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-size:14px; display:flex; align-items:center; gap:8px; margin-bottom:10px;}
     .location-btn:hover {background:#218838;}
     .location-btn:disabled {background:#6c757d; cursor:not-allowed;}
+    
+    /* Progress bar */
+    .progress-container {display:none; margin:20px 0; padding:15px; background:#fff; border:1px solid #ccc; border-radius:5px;}
+    .progress-container.active {display:block;}
+    .progress-bar-wrapper {width:100%; height:30px; background:#e9ecef; border-radius:15px; overflow:hidden; position:relative;}
+    .progress-bar {height:100%; background:linear-gradient(90deg, #007bff, #0056b3); width:0%; transition:width 0.3s ease; position:relative; border-radius:15px;}
+    .progress-bar::after {content:''; position:absolute; top:0; left:0; bottom:0; right:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation:shimmer 2s infinite;}
+    @keyframes shimmer {0% {transform:translateX(-100%);} 100% {transform:translateX(100%);}}
+    .progress-text {text-align:center; margin-top:10px; font-size:14px; color:#666;}
+    .progress-spinner {display:inline-block; width:16px; height:16px; border:2px solid #007bff; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px;}
+    @keyframes spin {to {transform:rotate(360deg);}}
   </style>
 </head>
 <body>
@@ -139,6 +150,17 @@
       </div>
       <button type="button" id="calcBtn">Calcular Ahorro</button>
     </form>
+    
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="progress-text" id="progressText">
+        <span class="progress-spinner"></span>
+        <span id="progressMessage">Consultando datos de radiación solar...</span>
+      </div>
+    </div>
+    
     <div id="results"></div>
     
     <div class="footer">
@@ -509,9 +531,23 @@
         return;
       }
 
-      // Show loading
+      // Show progress bar
       var resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '<div class="result-item">' + (translations.calculating || '⏳ Consultando datos de radiación solar de PVGIS...') + '</div>';
+      var progressContainer = document.getElementById('progressContainer');
+      var progressBar = document.getElementById('progressBar');
+      var progressMessage = document.getElementById('progressMessage');
+      
+      resultsDiv.innerHTML = ''; // Clear results
+      progressContainer.classList.add('active');
+      progressBar.style.width = '0%';
+      progressMessage.textContent = translations.calculating || 'Consultando datos de radiación solar...';
+      
+      // Animate progress bar
+      setTimeout(function() { progressBar.style.width = '30%'; }, 100);
+      setTimeout(function() { 
+        progressBar.style.width = '60%';
+        progressMessage.textContent = translations.processingData || 'Procesando datos de PVGIS...';
+      }, 500);
 
       // Call PVGIS API
       // Local: use local Python proxy server
@@ -570,6 +606,10 @@
         .then(function(data) {
           console.log('Respuesta completa de PVGIS:', JSON.stringify(data, null, 2));
           
+          // Update progress
+          progressBar.style.width = '90%';
+          progressMessage.textContent = translations.calculatingSavings || 'Calculando ahorro económico...';
+          
           // Parse PVGIS response - verificar estructura
           if (!data.outputs) {
             throw new Error('La API no devolvió datos válidos. Estructura: ' + JSON.stringify(Object.keys(data)));
@@ -607,6 +647,15 @@
           var annualSavings = annualProductionKWh * pricePerKWh;
           var monthlySavings = annualSavings / 12;
 
+          // Complete progress
+          progressBar.style.width = '100%';
+          progressMessage.textContent = translations.completed || '¡Completado!';
+          
+          // Hide progress bar after a moment
+          setTimeout(function() {
+            progressContainer.classList.remove('active');
+          }, 500);
+
           // Display results
           resultsDiv.innerHTML = 
             '<h3>📊 Resultados del Análisis Solar</h3>' +
@@ -641,6 +690,9 @@
         })
         .catch(function(err) {
           console.error('Error completo:', err);
+          
+          // Hide progress bar on error
+          progressContainer.classList.remove('active');
           
           var errorMessage = err.message;
           var isServerError = errorMessage.includes('servidor local') || 

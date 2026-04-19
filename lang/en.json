@@ -50,5 +50,8 @@
   "contactText": "Contact us",
   "getLocationText": "Get my location",
   "gettingLocation": "Getting location...",
-  "locationError": "Could not get location. Please check browser permissions."
+  "locationError": "Could not get location. Please check browser permissions.",
+  "processingData": "Processing PVGIS data...",
+  "calculatingSavings": "Calculating economic savings...",
+  "completed": "Completed!"
 }
