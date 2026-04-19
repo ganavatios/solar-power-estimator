@@ -79,5 +79,13 @@
   "calculatingWithRealPrices": "Calculando ahorro con precios reales...",
   "pvpcAveragePrice": "Precio medio PVPC:",
   "pvpcDataSource": "promedio trimestral REE",
-  "errorFetchingPrices": "No se pudieron obtener precios PVPC. Usando precio estimado."
+  "errorFetchingPrices": "No se pudieron obtener precios PVPC. Usando precio estimado.",
+  "shareTitle": "💚 ¡Comparte esta herramienta!",
+  "shareFacebook": "Facebook",
+  "shareTwitter": "X (Twitter)",
+  "shareWhatsapp": "WhatsApp",
+  "shareLinkedin": "LinkedIn",
+  "shareCopy": "Copiar enlace",
+  "shareCopied": "✅ ¡Copiado!",
+  "shareMessage": "Calcula tu ahorro solar con esta herramienta: "
 }

@@ -21,19 +21,32 @@ Sin Vercel desplegado, GitHub Pages mostrará errores al calcular.
 ## 🌟 Características
 
 - 🗺️ Mapa interactivo para seleccionar ubicación
-- 🌍 **Soporte multiidioma** (Español e Inglés)
+- 🌍 **Arquitectura multi-idioma SEO optimizada**
+  - URLs limpias: `/es/` y `/en/`
+  - Meta tags específicos por idioma
+  - hreflang tags para SEO internacional
+  - Open Graph y Twitter Cards
+  - Redirección automática según idioma del navegador
 - ☀️ Datos reales de radiación solar (API PVGIS)
 - 📊 Cálculo de producción anual, mensual y diaria
 - 💰 Estimación de ahorro económico
 - ⚙️ Configuración personalizable (inclinación, orientación, pérdidas)
 - 📍 Geolocalización automática
-- 🔄 Detección automática del idioma del navegador
+- 🔄 Widgets interactivos (brújula, visualizador de inclinación)
+- 📱 Diseño responsive (móvil, tablet, desktop)
+- 🔗 **Botones de compartir en redes sociales**
+  - Facebook, X (Twitter), WhatsApp, LinkedIn
+  - Copiar enlace al portapapeles
+  - Iconos circulares con tooltips
 
 ## 🚀 Inicio Rápido
 
 ### GitHub Pages (Producción)
 
-La aplicación está desplegada en: **https://ganavatios.github.io/solar-power-estimator/**
+**URLs disponibles:**
+- **Auto-redirección**: https://www.ganavatios.com/ → Detecta idioma del navegador
+- **Español**: https://www.ganavatios.com/es/
+- **Inglés**: https://www.ganavatios.com/en/
 
 > **Nota**: En producción, la aplicación usa una función serverless en Vercel como proxy para PVGIS API.
 
@@ -61,6 +74,11 @@ python3 server.py 8000
 
 El servidor se iniciará en http://localhost:8000 y (en PowerShell) se abrirá automáticamente en el navegador.
 
+**URLs locales:**
+- http://localhost:8000/ → Redirección automática
+- http://localhost:8000/es/ → Versión española
+- http://localhost:8000/en/ → Versión inglesa
+
 #### Opción 2: Manual
 
 ```bash
@@ -76,15 +94,36 @@ python server.py 8000
 
 ## 📖 Uso
 
-1. **Seleccionar idioma**: Usa el selector en la esquina superior derecha (auto-detecta el idioma del navegador)
-2. **Seleccionar ubicación**: Haz clic en el mapa o permite la geolocalización
+1. **Seleccionar idioma**: 
+   - La web detecta automáticamente tu idioma
+   - También puedes cambiar manualmente con el selector de banderas
+   - URLs específicas: `/es/` para español, `/en/` para inglés
+   
+2. **Seleccionar ubicación**: 
+   - Haz clic en el mapa o permite la geolocalización
+   - El marcador muestra las coordenadas seleccionadas
+   
 3. **Configurar parámetros**:
    - Potencia instalada (Wp)
-   - Inclinación de paneles (grados)
-   - Orientación azimut (0° = Sur)
+   - Inclinación de paneles (grados) - con visualizador interactivo
+   - Orientación azimut (0° = Sur) - con brújula interactiva
    - Pérdidas del sistema (%)
-4. **Seleccionar tarifa**: Tarifa variable o personalizada
+   
+4. **Seleccionar tarifa**: 
+   - PVPC (precios reales para España)
+   - Tarifa fija personalizada
+   
 5. **Calcular**: Presiona el botón "Calcular Ahorro" / "Calculate Savings"
+
+6. **Ver resultados**:
+   - Producción anual estimada
+   - Ahorro económico
+   - Datos de radiación solar
+   
+7. **Compartir**:
+   - Usa los botones circulares para compartir en redes sociales
+   - Facebook, X (Twitter), WhatsApp, LinkedIn
+   - Copiar enlace al portapapeles
 
 ## 🔧 Tecnologías
 
@@ -134,37 +173,117 @@ La versión actual y fecha de despliegue se muestran en el footer de la aplicaci
 
 ```
 solar-power-estimator/
-├── index.html              # Aplicación principal
-├── version.json           # Información de versión y fecha
-├── vercel.json            # Configuración de Vercel
-├── .github/
-│   └── workflows/
-│       └── version-bump.yml  # GitHub Actions para versionado
-├── api/
-│   ├── pvgis.js          # Vercel Serverless Function (proxy PVGIS)
-│   └── README.md         # Documentación del proxy
+├── index.html              # Redirección automática por idioma
+├── es/
+│   └── index.html         # Versión española (SEO optimizado)
+├── en/
+│   └── index.html         # Versión inglesa (SEO optimizado)
+├── assets/
+│   ├── styles.css         # Estilos compartidos
+│   └── app.js            # Lógica compartida
 ├── lang/                  # Archivos de traducción
 │   ├── es.json           # Español
 │   ├── en.json           # English
 │   └── README.md
+├── api/
+│   ├── pvgis.js          # Vercel Serverless Function (proxy PVGIS)
+│   ├── pvpc-prices.js    # Vercel Serverless Function (precios PVPC)
+│   └── README.md         # Documentación del proxy
 ├── scripts/              # Scripts de inicio y utilidades
 │   ├── server.py         # Servidor Python con proxy PVGIS (desarrollo local)
 │   ├── start-server.bat  # Windows CMD
 │   ├── start-server.ps1  # Windows PowerShell
 │   └── README.md
+├── .github/
+│   └── workflows/
+│       └── version-bump.yml  # GitHub Actions para versionado
+├── version.json           # Información de versión y fecha
+├── vercel.json            # Configuración de Vercel
+├── logo.png               # Logo de GanaVatios
+├── STRUCTURE.md           # Documentación de arquitectura
+├── DEPLOYMENT.md          # Guía de despliegue
 └── README.md
 ```
 
+### Arquitectura Multi-idioma
+
+**Ventajas del diseño actual:**
+- ✅ **Sin duplicación**: CSS y JS compartidos en `/assets/`
+- ✅ **SEO optimizado**: Meta tags específicos por idioma
+- ✅ **URLs limpias**: `/es/` y `/en/` en lugar de parámetros
+- ✅ **hreflang tags**: Google entiende las versiones traducidas
+- ✅ **Open Graph**: Compartir en redes sociales con contenido apropiado
+- ✅ **Redirección inteligente**: Detecta idioma del navegador
+- ✅ **Fácil mantenimiento**: Un solo lugar para editar funcionalidad
+
+Ver [STRUCTURE.md](STRUCTURE.md) para más detalles técnicos.
+
 ## 🌍 Añadir Nuevos Idiomas
 
-Para añadir un nuevo idioma:
+Para añadir un nuevo idioma (ejemplo: Francés):
 
-1. Crea un nuevo archivo en `lang/` (ej: `lang/fr.json`)
-2. Copia la estructura de `lang/en.json` o `lang/es.json`
-3. Traduce todos los textos
-4. Añade el idioma al selector en `index.html`:
+1. **Crear carpeta de idioma**
+   ```bash
+   mkdir fr
+   ```
+
+2. **Copiar página HTML**
+   ```bash
+   cp es/index.html fr/index.html
+   ```
+
+3. **Actualizar meta tags en `fr/index.html`**
    ```html
-   <option value="fr">Français</option>
+   <html lang="fr">
+   <title>GanaVatios | Économies d'Énergie Intelligentes</title>
+   <meta name="description" content="...">
+   <meta name="language" content="French">
+   <link rel="canonical" href="https://www.ganavatios.com/fr/">
+   ```
+
+4. **Actualizar hreflang tags** (en TODAS las páginas: es/, en/, fr/)
+   ```html
+   <link rel="alternate" hreflang="es" href="https://www.ganavatios.com/es/" />
+   <link rel="alternate" hreflang="en" href="https://www.ganavatios.com/en/" />
+   <link rel="alternate" hreflang="fr" href="https://www.ganavatios.com/fr/" />
+   <link rel="alternate" hreflang="x-default" href="https://www.ganavatios.com/en/" />
+   ```
+
+5. **Crear archivo de traducciones**
+   ```bash
+   cp lang/en.json lang/fr.json
+   ```
+   Traducir todos los textos en `lang/fr.json`
+
+6. **Actualizar script de idioma en `fr/index.html`**
+   ```html
+   <script>
+     window.GANAVATIOS_LANG = 'fr';
+     window.GANAVATIOS_BASE_PATH = '../';
+   </script>
+   ```
+
+7. **Añadir bandera SVG** (en todas las páginas)
+   ```html
+   <svg class="lang-flag" data-lang="fr" viewBox="0 0 900 600">
+     <!-- SVG de bandera francesa -->
+   </svg>
+   ```
+
+8. **Actualizar redirección en `index.html`**
+   ```javascript
+   if (browserLang.startsWith('fr')) {
+     lang = 'fr';
+   }
+   ```
+
+9. **Configurar Vercel** (si aplica)
+   ```json
+   {
+     "rewrites": [
+       { "source": "/fr", "destination": "/fr/" }
+     ]
+   }
    ```
 
 ## 📊 Datos Proporcionados

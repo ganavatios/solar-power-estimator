@@ -79,5 +79,13 @@
   "calculatingWithRealPrices": "Calculating savings with real prices...",
   "pvpcAveragePrice": "Average price:",
   "pvpcDataSource": "quarterly average REE",
-  "errorFetchingPrices": "Could not fetch prices. Using estimated price."
+  "errorFetchingPrices": "Could not fetch prices. Using estimated price.",
+  "shareTitle": "💚 Share this tool!",
+  "shareFacebook": "Facebook",
+  "shareTwitter": "X (Twitter)",
+  "shareWhatsapp": "WhatsApp",
+  "shareLinkedin": "LinkedIn",
+  "shareCopy": "Copy link",
+  "shareCopied": "✅ Copied!",
+  "shareMessage": "Calculate your solar savings with this tool: "
 }

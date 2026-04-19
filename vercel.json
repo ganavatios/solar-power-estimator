@@ -21,5 +21,11 @@
         }
       ]
     }
-  ]
+  ],
+  "rewrites": [
+    { "source": "/es", "destination": "/es/" },
+    { "source": "/en", "destination": "/en/" }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": true
 }

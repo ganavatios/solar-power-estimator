@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GanaVatios | Smart Energy Savings & Plug & Play Solar Kits</title>
+  <meta name="description" content="Lower your electricity bill with GanaVatios. Easy-to-install smart home solutions and balcony solar kits. Start saving energy today!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="keywords" content="energy savings, solar panel, balcony solar kit, smart home, plug and play, solar energy, ganavatios">
+  <meta name="language" content="English">
+  <meta name="author" content="GanaVatios">
+  <link rel="canonical" href="https://www.ganavatios.com/en/">
+  <link rel="alternate" hreflang="es" href="https://www.ganavatios.com/es/" />
+  <link rel="alternate" hreflang="en" href="https://www.ganavatios.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://www.ganavatios.com/en/" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.ganavatios.com/en/">
+  <meta property="og:title" content="GanaVatios | Smart Energy Savings & Plug & Play Solar Kits">
+  <meta property="og:description" content="Lower your electricity bill with GanaVatios. Easy-to-install smart home solutions and balcony solar kits.">
+  <meta property="og:image" content="https://www.ganavatios.com/logo.png">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://www.ganavatios.com/en/">
+  <meta property="twitter:title" content="GanaVatios | Smart Energy Savings & Plug & Play Solar Kits">
+  <meta property="twitter:description" content="Lower your electricity bill with GanaVatios. Easy-to-install smart home solutions and balcony solar kits.">
+  <meta property="twitter:image" content="https://www.ganavatios.com/logo.png">
+  
+  <link rel="icon" href="../logo.png" type="image/png">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <!-- GanaVatios Styles -->
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="content-wrapper">
+      <div class="lang-selector lang-selector-mobile">
+        <svg class="lang-flag" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+          <rect width="900" height="600" fill="#c60b1e"/>
+          <rect width="900" height="300" y="150" fill="#ffc400"/>
+        </svg>
+        <svg class="lang-flag" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+          <clipPath id="s2"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+          <clipPath id="t2"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
+          <g clip-path="url(#s2)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t2)" stroke="#C8102E" stroke-width="4"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
+        </svg>
+      </div>
+      <div class="logo-header">
+        <img src="../logo.png" alt="GanaVatios - Smart Savings">
+      </div>
+      <div class="header-container">
+        <h1 id="heading">Solar Panel Savings Calculator</h1>
+        <div class="lang-selector">
+          <svg class="lang-flag" id="langES" data-lang="es" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+            <rect width="900" height="600" fill="#c60b1e"/>
+            <rect width="900" height="300" y="150" fill="#ffc400"/>
+          </svg>
+          <svg class="lang-flag active" id="langEN" data-lang="en" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+            <clipPath id="s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+            <clipPath id="t"><path d="M30,15 h30 v15 z v-15 h-30 z h-30 v15 z v-15 h30 z"/></clipPath>
+            <g clip-path="url(#s)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+            <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t)" stroke="#C8102E" stroke-width="4"/>
+            <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+            <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g>
+          </svg>
+        </div>
+      </div>
+      <button class="location-btn" id="getLocationBtn">
+        <span>📍</span>
+        <span id="getLocationText">Get my location</span>
+      </button>
+      <p><small id="mapInstruction">👈 Click on the map to select your location</small></p>
+      <div id="locationInfo" style="padding:10px; background:#E1F5FE; border-radius:5px; margin-bottom:15px; display:none; border-left:3px solid #2E87AC;">
+        <strong id="locationSelectedLabel">📍 Selected location:</strong><br>
+        <span id="coordsDisplay">-</span>
+      </div>
+      <form id="inputForm">
+        <div class="form-group">
+          <label for="panelPower" id="labelPanelPower">Installed capacity (Wp)</label>
+          <input type="number" id="panelPower" placeholder="E.g.: 400" step="10" value="400">
+        </div>
+        <div class="form-group">
+          <label for="tilt" id="labelTilt">Panel tilt (°)</label>
+          <div class="tilt-container">
+            <div class="tilt-input-group">
+              <input type="number" id="tilt" placeholder="E.g.: 30" value="30" min="0" max="90">
+              <small id="helpTilt">Adjust value or visualize the plane. 0° = Horizontal, 90° = Vertical</small>
+            </div>
+            <div class="tilt-visualizer" id="tiltVisualizer">
+              <div class="tilt-angle-label" id="tiltAngleLabel">30°</div>
+              <div class="panel-line" id="panelLine"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="azimuth" id="labelAzimuth">Azimuth orientation (°)</label>
+          <div class="compass-container">
+            <div class="azimuth-input-group">
+              <input type="number" id="azimuth" placeholder="E.g.: 0" value="0">
+              <small id="helpAzimuth">Click on compass or enter value. 0° = South, -90° = East, 90° = West, 180° = North</small>
+            </div>
+            <div class="compass" id="compassWidget">
+              <div class="compass-cardinal n">N</div>
+              <div class="compass-cardinal s">S</div>
+              <div class="compass-cardinal e">E</div>
+              <div class="compass-cardinal w">W</div>
+              <div class="compass-needle" id="compassNeedle"></div>
+              <div class="compass-center"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="systemLoss" id="labelSystemLoss">System losses (%)</label>
+          <input type="number" id="systemLoss" placeholder="E.g.: 14" value="14">
+          <small id="helpSystemLoss">Includes losses from cables, inverter, dirt, etc.</small>
+        </div>
+        <div class="form-group">
+          <label id="labelTariffType">Electricity tariff type</label>
+          <div>
+            <input type="radio" id="tariffPvpc" name="tariff" value="pvpc" checked>
+            <label for="tariffPvpc" id="labelTariffPvpc" style="display:inline;">Variable rate (avg. 0.15 €/kWh)</label>
+          </div>
+          <small id="helpTariffPvpc" style="color:#666; margin-left:20px; display:block; margin-top:3px;">For Spain, real electricity market prices will be used</small>
+          <div style="margin-top:8px;">
+            <input type="radio" id="tariffFixed" name="tariff" value="fixed">
+            <label for="tariffFixed" id="labelTariffFixed" style="display:inline;">Custom fixed rate</label>
+          </div>
+        </div>
+        <div id="fixedTariffFields" style="display:none;">
+          <div class="form-group">
+            <label for="priceFixed" id="labelPriceFixed">Average price (€/kWh)</label>
+            <input type="number" id="priceFixed" step="0.01" placeholder="E.g.: 0.18" value="0.18">
+          </div>
+        </div>
+        <button type="button" id="calcBtn">Calculate Savings</button>
+      </form>
+      
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">
+          <span class="progress-spinner"></span>
+          <span id="progressMessage">Fetching solar radiation data...</span>
+        </div>
+      </div>
+      
+      <div id="results"></div>
+      
+      <div class="share-section">
+        <h3 id="shareTitle">💚 Share this tool!</h3>
+        <div class="share-buttons">
+          <button class="share-btn facebook" id="shareFacebook" title="Share on Facebook">
+            <span class="icon">f</span>
+          </button>
+          <button class="share-btn twitter" id="shareTwitter" title="Share on X (Twitter)">
+            <span class="icon">𝕏</span>
+          </button>
+          <button class="share-btn whatsapp" id="shareWhatsapp" title="Share on WhatsApp">
+            <span class="icon">💬</span>
+          </button>
+          <button class="share-btn linkedin" id="shareLinkedin" title="Share on LinkedIn">
+            <span class="icon">in</span>
+          </button>
+          <button class="share-btn copy" id="shareCopy" title="Copy link">
+            <span class="icon" id="copyIcon">🔗</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="footer">
+        <div class="logo-footer">
+          <img src="../logo.png" alt="GanaVatios">
+        </div>
+        <div class="version-info">
+          <span id="versionText">Version: </span><strong id="versionNumber">0.1.0</strong> | 
+          <span id="deployText">Deployed: </span><span id="deployDate">2026-04-19</span>
+        </div>
+        <div>
+          <a href="#" id="contactLink">📧 <span id="contactText">Contact us</span></a>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Force English language -->
+  <script>
+    window.GANAVATIOS_LANG = 'en';
+    window.GANAVATIOS_BASE_PATH = '../';
+  </script>
+  <!-- GanaVatios Application -->
+  <script src="../assets/app.js"></script>
+</body>
+</html>
