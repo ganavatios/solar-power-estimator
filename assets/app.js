@@ -492,7 +492,13 @@
         }
         
         if (!response.ok) {
-          throw new Error('Error HTTP: ' + response.status + ' - ' + response.statusText);
+          return response.json().catch(function() { return {}; }).then(function(errBody) {
+            var pvgisMsg = errBody.message || '';
+            if (pvgisMsg.toLowerCase().includes('over the sea')) {
+              throw new Error('__OVER_THE_SEA__');
+            }
+            throw new Error('Error HTTP: ' + response.status + ' - ' + (errBody.message || response.statusText));
+          });
         }
         
         const contentType = response.headers.get('content-type');
@@ -601,9 +607,19 @@
         progressContainer.classList.remove('active');
         
         var errorMessage = err.message;
-        var isServerError = errorMessage.includes('servidor local') || 
+
+        if (errorMessage === '__OVER_THE_SEA__') {
+          resultsDiv.innerHTML =
+            '<div class="result-item error">' +
+            '<strong>🌊 ' + (translations.errorOverTheSea || 'Ubicación en zona costera sin datos de radiación') + '</strong><br>' +
+            '<p style="margin: 8px 0 0;">' + (translations.errorOverTheSeaTip || 'PVGIS no dispone de datos para este punto exacto. Mueve el marcador unos metros tierra adentro e inténtalo de nuevo.') + '</p>' +
+            '</div>';
+          return;
+        }
+
+        var isServerError = errorMessage.includes('servidor local') ||
                            errorMessage.includes('no está corriendo');
-        
+
         var tips = '';
         if (isServerError) {
           tips = 

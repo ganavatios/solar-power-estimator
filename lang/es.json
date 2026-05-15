@@ -87,5 +87,7 @@
   "shareLinkedin": "LinkedIn",
   "shareCopy": "Copiar enlace",
   "shareCopied": "✅ ¡Copiado!",
-  "shareMessage": "Calcula tu ahorro solar con esta herramienta: "
+  "shareMessage": "Calcula tu ahorro solar con esta herramienta: ",
+  "errorOverTheSea": "Ubicación en zona costera sin datos de radiación",
+  "errorOverTheSeaTip": "PVGIS no dispone de datos para este punto exacto (resolución de cuadrícula ~1 km). Mueve el marcador unos metros tierra adentro e inténtalo de nuevo."
 }

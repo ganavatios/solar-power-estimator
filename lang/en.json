@@ -87,5 +87,7 @@
   "shareLinkedin": "LinkedIn",
   "shareCopy": "Copy link",
   "shareCopied": "✅ Copied!",
-  "shareMessage": "Calculate your solar savings with this tool: "
+  "shareMessage": "Calculate your solar savings with this tool: ",
+  "errorOverTheSea": "Location in coastal area with no radiation data",
+  "errorOverTheSeaTip": "PVGIS has no data for this exact point (grid resolution ~1 km). Move the marker a few metres inland and try again."
 }

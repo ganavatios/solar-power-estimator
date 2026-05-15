@@ -41,11 +41,17 @@ export default async function handler(req, res) {
     
     // Fetch from PVGIS API
     const response = await fetch(pvgisUrl.toString());
-    
+
     if (!response.ok) {
-      throw new Error(`PVGIS API returned ${response.status}`);
+      let pvgisError = {};
+      try { pvgisError = await response.json(); } catch {}
+      const statusToReturn = response.status >= 400 && response.status < 500 ? response.status : 502;
+      return res.status(statusToReturn).json({
+        error: 'PVGIS API error',
+        message: pvgisError.message || `PVGIS API returned ${response.status}`
+      });
     }
-    
+
     const data = await response.json();
     
     // Return the data
